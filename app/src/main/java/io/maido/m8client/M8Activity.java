@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.AssetManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
@@ -12,6 +13,12 @@ import android.util.Log;
 
 import org.libsdl.app.SDLActivity;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -43,6 +50,7 @@ public class M8Activity extends SDLActivity {
 
     @Override
     protected void onStart() {
+        copyFile(this, "gamecontrollerdb.txt", "/data/data/io.maido.m8client/files/gamecontrollerdb.txt");
         UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 
         UsbDevice usbDevice = getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
@@ -62,6 +70,38 @@ public class M8Activity extends SDLActivity {
             }
         }
         super.onStart();
+    }
+
+    private boolean copyFile(Context context, String sourceFileName, String destFileName) {
+        AssetManager assetManager = context.getAssets();
+
+        File destFile = new File(destFileName);
+
+        File destParentDir = destFile.getParentFile();
+        destParentDir.mkdir();
+
+        InputStream in;
+        OutputStream out;
+        try {
+            in = assetManager.open(sourceFileName);
+            out = new FileOutputStream(destFile);
+
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            in.close();
+            out.flush();
+            out.close();
+
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     private void requestPermissionIfNeeded(UsbManager usbManager, UsbDevice usbDevice) {
