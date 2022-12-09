@@ -8,32 +8,30 @@ import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
-import android.os.Bundle;
 import android.util.Log;
 
 import org.libsdl.app.SDLActivity;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
 
 public class M8Activity extends SDLActivity {
     private static final String ACTION_USB_PERMISSION =
-            "com.android.example.USB_PERMISSION";
+            "io.maido.m8client.USB_PERMISSION";
     private static final String TAG = "M8Activity";
+
     private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
 
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (ACTION_USB_PERMISSION.equals(action)) {
                 synchronized (this) {
-                    UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                    UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
 
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         if (device != null) {
-                            //call method to set up device communication
+                            UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+                            connectToM8(device, usbManager);
                         }
                     } else {
                         Log.d(TAG, "permission denied for device " + device);
@@ -43,43 +41,53 @@ public class M8Activity extends SDLActivity {
         }
     };
 
-    private List<String> mainArguments = new ArrayList<>();
-    private HashMap<Integer, Integer> connectedDevices = new HashMap<>();
-
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onStart() {
         UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
 
+        UsbDevice usbDevice = getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
+        // Activity was launched by attaching the USB device so permissions are implicitly granted
+        if (usbDevice != null) {
+            Log.i(TAG, "M8 was attached, launching application");
+            connectToM8(usbDevice, usbManager);
+        } else {
+            Log.i(TAG, "Searching for an M8 device");
+            HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
+            for (UsbDevice device : deviceList.values()) {
+                if (Objects.equals(device.getProductName(), "M8")) {
+                    requestPermissionIfNeeded(usbManager, device);
+                    connectToM8(device, usbManager);
+                    break;
+                }
+            }
+        }
+        super.onStart();
+    }
+
+    private void requestPermissionIfNeeded(UsbManager usbManager, UsbDevice usbDevice) {
         PendingIntent permissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_IMMUTABLE);
         IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
         registerReceiver(usbReceiver, filter);
-
-        HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
-        Log.i(TAG, deviceList.keySet().toString());
-        Iterator<UsbDevice> deviceIterator = deviceList.values().iterator();
-        while (deviceIterator.hasNext()) {
-            UsbDevice device = deviceIterator.next();
-            if (Objects.equals(device.getProductName(), "M8")) {
-                mainArguments.add(device.getDeviceName());
-                Log.i(TAG, device.toString());
-                usbManager.requestPermission(device, permissionIntent);
-
-                UsbDeviceConnection connection = usbManager.openDevice(device);
-                // if we make this, kernel driver will be disconnected
-                connection.claimInterface(device.getInterface(0), true);
-                connection.claimInterface(device.getInterface(1), true);
-                Log.d(TAG, "inserting device with id: " + device.getDeviceId() + " and file descriptor: " + connection.getFileDescriptor());
-                connectedDevices.put(device.getDeviceId(), connection.getFileDescriptor());
-                mainArguments.add(String.valueOf(connection.getFileDescriptor()));
-                break;
-            }
-        }
-        super.onCreate(savedInstanceState);
+        usbManager.requestPermission(usbDevice, permissionIntent);
     }
 
+    private void connectToM8(UsbDevice device, UsbManager usbManager) {
+        UsbDeviceConnection connection = usbManager.openDevice(device);
+        // if we make this, kernel driver will be disconnected
+        connection.claimInterface(device.getInterface(0), true);
+        Log.d(TAG, "Setting device with id: " + device.getDeviceId() + " and file descriptor: " + connection.getFileDescriptor());
+        setFileDescriptor(connection.getFileDescriptor());
+    }
+
+    public native void setFileDescriptor(int fileDescriptor);
+
     @Override
-    protected String[] getArguments() {
-        return mainArguments.toArray(new String[]{});
+    protected String[] getLibraries() {
+        return new String[]{
+                "SDL2",
+                "usb-1.0",
+                "m8c",
+                "main"
+        };
     }
 }

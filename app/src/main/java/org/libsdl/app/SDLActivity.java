@@ -60,8 +60,8 @@ import java.util.Locale;
 public class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
     private static final String TAG = "SDL";
     private static final int SDL_MAJOR_VERSION = 2;
-    private static final int SDL_MINOR_VERSION = 26;
-    private static final int SDL_MICRO_VERSION = 1;
+    private static final int SDL_MINOR_VERSION = 27;
+    private static final int SDL_MICRO_VERSION = 0;
 /*
     // Display InputType.SOURCE/CLASS of events and devices
     //
@@ -270,8 +270,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected String[] getLibraries() {
         return new String[] {
             "SDL2",
-                "serialport",
-                "usb-1.0",
             // "SDL2_image",
             // "SDL2_mixer",
             // "SDL2_net",
