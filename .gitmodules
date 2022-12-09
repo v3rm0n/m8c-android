@@ -1,0 +1,7 @@
+[submodule "app/jni/libusb/libusb"]
+	path = app/jni/libusb/libusb
+	url = https://github.com/libusb/libusb.git
+[submodule "app/jni/SDL"]
+	path = app/jni/SDL
+	url = https://github.com/libsdl-org/SDL.git
+	branch = SDL2
