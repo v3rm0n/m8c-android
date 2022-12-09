@@ -10,10 +10,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up JDK 1.8
+    - name: Set up JDK
       uses: actions/setup-java@v3
       with:
-        java-version: 8.0.342+7
+        java-version: 11.0.16+8
         distribution: liberica
 
     - name: Setup Android SDK
