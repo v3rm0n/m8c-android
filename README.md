@@ -8,7 +8,8 @@ Android wrapper for the awesome [m8c](https://github.com/laamaa/m8c). Nothing ge
 
 - [x] Display
 - [x] Game controller input
-- [x] Audio
+- [x] Audio playback
+- [ ] Audio recording
 - [ ] Android touch screen input
 
 ## Prerequisites
