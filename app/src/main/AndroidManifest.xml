@@ -23,6 +23,10 @@
         android:name="android.hardware.usb.host"
         android:required="true" />
 
+    <uses-feature
+        android:name="android.hardware.audio.low_latency"
+        android:required="true" />
+
     <uses-permission
         android:name="android.permission.RECORD_AUDIO"
         android:required="true" />

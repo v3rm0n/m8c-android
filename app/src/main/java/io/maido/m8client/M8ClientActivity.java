@@ -6,27 +6,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbEndpoint;
-import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
-import android.media.AudioAttributes;
-import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import java.io.FileDescriptor;
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.Optional;
-
-import au.id.jms.usbaudio.AudioPlayback;
-import au.id.jms.usbaudio.UsbAudio;
 
 public class M8ClientActivity extends Activity {
     private static final String ACTION_USB_PERMISSION =
@@ -34,8 +22,6 @@ public class M8ClientActivity extends Activity {
     private static final String TAG = "M8ClientActivity";
 
     private UsbDevice m8 = null;
-
-    UsbAudio mUsbAudio = null;
 
     private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
 
@@ -95,10 +81,6 @@ public class M8ClientActivity extends Activity {
     protected void onDestroy() {
         Log.d(TAG, "onDestroy");
         unregisterReceiver(usbReceiver);
-        if (mUsbAudio != null) {
-            mUsbAudio.stop();
-            mUsbAudio.close();
-        }
         super.onDestroy();
     }
 
@@ -148,23 +130,10 @@ public class M8ClientActivity extends Activity {
         if (connection != null) {
             Log.d(TAG, "Setting device with id: " + usbDevice.getDeviceId() + " and file descriptor: " + connection.getFileDescriptor());
             m8 = usbDevice;
-            startAudio(connection);
             startSDLActivity(connection);
         }
     }
 
-    private void startAudio(UsbDeviceConnection connection) {
-        mUsbAudio = new UsbAudio();
-        AudioPlayback.setup();
-
-        mUsbAudio.setup(connection.getFileDescriptor());
-
-        new Thread(() -> {
-            while (true) {
-                mUsbAudio.loop();
-            }
-        }).start();
-    }
 
     private void startSDLActivity(UsbDeviceConnection connection) {
         Intent sdlActivity = new Intent(this, M8SDLActivity.class);

@@ -14,6 +14,7 @@ public class M8SDLActivity extends SDLActivity {
 
     private static final String TAG = "M8SDLActivity";
 
+
     BroadcastReceiver finishReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -26,11 +27,24 @@ public class M8SDLActivity extends SDLActivity {
     };
 
     @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy");
+        super.onDestroy();
+    }
+
+    public native void loop();
+
+    @Override
     protected void onStart() {
         registerReceiver(finishReceiver, new IntentFilter(FINISH));
         int fileDescriptor = getIntent().getIntExtra(FILE_DESCRIPTOR, -1);
         Log.d(TAG, "Setting file descriptor to " + fileDescriptor);
         setFileDescriptor(fileDescriptor);
+        new Thread(() -> {
+            while (true) {
+                loop();
+            }
+        }).start();
         super.onStart();
     }
 
@@ -43,9 +57,6 @@ public class M8SDLActivity extends SDLActivity {
     @Override
     protected String[] getLibraries() {
         return new String[]{
-                "SDL2",
-                "usb-1.0",
-                "m8c",
                 "main"
         };
     }
