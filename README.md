@@ -4,6 +4,10 @@
 
 Android wrapper for the awesome [m8c](https://github.com/laamaa/m8c). Nothing gets close to the real thing so get yours from [here](https://dirtywave.com/products/m8-tracker).
 
+# Installing
+
+It's still in early development. If you want to try it out, check the [releases](https://github.com/v3rm0n/m8c-android/releases) page to install it manually (you need to be able to install from unknown sources).
+
 # Features
 
 - [x] Display
@@ -11,6 +15,8 @@ Android wrapper for the awesome [m8c](https://github.com/laamaa/m8c). Nothing ge
 - [x] Audio playback
 - [ ] Audio recording
 - [x] Android touch screen input
+
+# Building
 
 ## Prerequisites
 - Android SDK
