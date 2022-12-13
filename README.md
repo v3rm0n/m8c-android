@@ -10,7 +10,7 @@ Android wrapper for the awesome [m8c](https://github.com/laamaa/m8c). Nothing ge
 - [x] Game controller input
 - [x] Audio playback
 - [ ] Audio recording
-- [ ] Android touch screen input
+- [x] Android touch screen input
 
 ## Prerequisites
 - Android SDK

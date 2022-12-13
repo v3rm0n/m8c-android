@@ -170,3 +170,8 @@ Java_io_maido_m8client_M8SDLActivity_setFileDescriptor(JNIEnv *env, jobject thiz
         audio_setup();
     }
 }
+
+JNIEXPORT void JNICALL
+Java_io_maido_m8client_M8SDLActivity_sendClickEvent(JNIEnv *env, jobject thiz, jchar event) {
+    send_msg_controller(event);
+}

@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">M8Client</string>
+    <string name="up">Up</string>
+    <string name="left">Left</string>
+    <string name="right">Right</string>
+    <string name="down">Down</string>
+    <string name="option">Option</string>
+    <string name="edit">Edit</string>
+    <string name="play">Play</string>
+    <string name="shift">Shift</string>
 </resources>
