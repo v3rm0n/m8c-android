@@ -9,14 +9,15 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class M8Device {
+public class M8Util {
 
     public static boolean isM8(UsbDevice usbDevice) {
         return usbDevice.getProductName().equals("M8");
     }
 
-    public static void copyGameControllerDB(Context context) {
+    public static void copyConfigurationFiles(Context context) {
         copyFile(context, "gamecontrollerdb.txt", "/data/data/io.maido.m8client/files/gamecontrollerdb.txt");
+        copyFile(context, "config.ini", "/data/data/io.maido.m8client/files/config.ini");
     }
 
     private static boolean copyFile(Context context, String sourceFileName, String destFileName) {

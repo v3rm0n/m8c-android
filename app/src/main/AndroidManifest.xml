@@ -42,14 +42,19 @@
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
         tools:targetApi="31">
         <activity
-            android:name=".M8ClientActivity"
+            android:name=".M8Activity"
+            android:alwaysRetainTaskState="true"
+            android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="true"
-            android:screenOrientation="landscape"
-            android:launchMode="singleInstance">
+            android:launchMode="singleInstance"
+            android:preferMinimalPostProcessing="true"
+            android:screenOrientation="landscape">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
@@ -58,13 +63,6 @@
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
         </activity>
-        <activity
-            android:name=".M8SDLActivity"
-            android:alwaysRetainTaskState="true"
-            android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
-            android:launchMode="singleInstance"
-            android:screenOrientation="landscape"
-            android:preferMinimalPostProcessing="true" />
     </application>
 
 </manifest>

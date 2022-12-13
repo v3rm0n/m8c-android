@@ -17,12 +17,11 @@ static struct timeval tv_start;
 
 static int do_exit = 1;
 
-libusb_device_handle *devh = NULL;
-
 #include <jni.h>
 #include <serial.h>
 
 static void cb_xfr(struct libusb_transfer *xfr) {
+
     unsigned int i;
 
     int len = 0;
@@ -33,8 +32,7 @@ static void cb_xfr(struct libusb_transfer *xfr) {
         if (pack->status != LIBUSB_TRANSFER_COMPLETED) {
             SDL_Log("Error (status %d: %s) :", pack->status,
                     libusb_error_name(pack->status));
-            /* This doesn't happen, so bail out if it does. */
-            exit(EXIT_FAILURE);
+            return;
         }
 
         const uint8_t *data = libusb_get_iso_packet_buffer_simple(xfr, i);
@@ -49,7 +47,7 @@ static void cb_xfr(struct libusb_transfer *xfr) {
 
     if (libusb_submit_transfer(xfr) < 0) {
         SDL_Log("error re-submitting URB\n");
-        exit(1);
+        return;
     }
 }
 
@@ -91,7 +89,7 @@ static int benchmark_in(libusb_device_handle *devh, uint8_t ep) {
     return 1;
 }
 
-int audio_setup() {
+int audio_setup(libusb_device_handle *devh) {
     SDL_Log("UsbAudio setup");
 
     int rc;
@@ -134,7 +132,9 @@ int audio_setup() {
         return rc;
     }
 
-    static SDL_AudioSpec audio_spec;
+    SDL_Log("Capture started");
+
+    SDL_AudioSpec audio_spec;
     audio_spec.format = AUDIO_S16;
     audio_spec.channels = 2;
     audio_spec.freq = 44100;
@@ -144,14 +144,14 @@ int audio_setup() {
         exit(-1);
     }
 
-    SDL_PauseAudio(0);
+    //SDL_PauseAudio(0);
 
-    SDL_Log("Successful init");
+    SDL_Log("Audio successful init");
     return 1;
 }
 
 JNIEXPORT void JNICALL
-Java_io_maido_m8client_M8SDLActivity_loop(JNIEnv *env, jobject thiz) {
+Java_io_maido_m8client_M8Activity_usbEventLoop(JNIEnv *env, jobject thiz) {
     while (!do_exit) {
         int rc = libusb_handle_events(NULL);
         if (rc != LIBUSB_SUCCESS) {
@@ -160,18 +160,26 @@ Java_io_maido_m8client_M8SDLActivity_loop(JNIEnv *env, jobject thiz) {
     }
 }
 
-JNIEXPORT void JNICALL
-Java_io_maido_m8client_M8SDLActivity_setFileDescriptor(JNIEnv *env, jobject thiz,
-                                                       jint fd) {
-    set_file_descriptor(fd);
-    if (fd != -1) {
-        init_serial(1);
-        devh = get_handle();
-        audio_setup();
-    }
+void audio_destroy() {
+    SDL_Log("Disconnect callback");
+    //SDL_CloseAudio();
+    do_exit = 1;
+    SDL_Log("Disconnected");
+}
+
+usb_disconnect_callback_t audio_cb(libusb_device_handle *devh) {
+    audio_setup(devh);
+    return &audio_destroy;
 }
 
 JNIEXPORT void JNICALL
-Java_io_maido_m8client_M8SDLActivity_sendClickEvent(JNIEnv *env, jobject thiz, jchar event) {
+Java_io_maido_m8client_M8Activity_connect(JNIEnv *env, jobject thiz,
+                                          jint fd) {
+    set_init_callback(&audio_cb);
+    set_file_descriptor(fd);
+}
+
+JNIEXPORT void JNICALL
+Java_io_maido_m8client_M8TouchListener_sendClickEvent(JNIEnv *env, jobject thiz, jchar event) {
     send_msg_controller(event);
 }
