@@ -33,7 +33,7 @@ public class M8ClientActivity extends Activity {
 
                     UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                        if (device != null && M8Device.isM8(device)) {
+                        if (device != null && M8Util.isM8(device)) {
                             connectToM8(usbManager, device);
                         } else {
                             Log.d(TAG, "Device was not M8");
@@ -51,7 +51,7 @@ public class M8ClientActivity extends Activity {
 
     private void stopM8SDLActivity(Intent intent) {
         UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-        if (device != null && M8Device.isM8(device)) {
+        if (device != null && M8Util.isM8(device)) {
             Log.i(TAG, "Device disconnected");
             Intent finishActivity = new Intent(M8SDLActivity.FINISH);
             sendBroadcast(finishActivity);
@@ -63,9 +63,10 @@ public class M8ClientActivity extends Activity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
         registerReceiver(usbReceiver, new IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED));
-        M8Device.copyGameControllerDB(this);
+        M8Util.copyGameControllerDB(this);
         UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         UsbDevice usbDevice = getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
         // Activity was launched by attaching the USB device so permissions are implicitly granted
@@ -74,7 +75,7 @@ public class M8ClientActivity extends Activity {
             connectToM8(usbManager, usbDevice);
         }
         searchForM8();
-        super.onCreate(savedInstanceState);
+        setContentView(R.layout.nodevice);
     }
 
     @Override
@@ -105,7 +106,7 @@ public class M8ClientActivity extends Activity {
         UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
         for (UsbDevice device : deviceList.values()) {
-            if (M8Device.isM8(device)) {
+            if (M8Util.isM8(device)) {
                 connectToM8WithPermission(usbManager, device);
                 break;
             }

@@ -172,6 +172,6 @@ Java_io_maido_m8client_M8SDLActivity_setFileDescriptor(JNIEnv *env, jobject thiz
 }
 
 JNIEXPORT void JNICALL
-Java_io_maido_m8client_M8SDLActivity_sendClickEvent(JNIEnv *env, jobject thiz, jchar event) {
+Java_io_maido_m8client_M8TouchListener_sendClickEvent(JNIEnv *env, jobject thiz, jchar event) {
     send_msg_controller(event);
 }
