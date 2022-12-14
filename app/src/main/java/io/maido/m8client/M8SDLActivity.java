@@ -35,7 +35,6 @@ public class M8SDLActivity extends SDLActivity {
         super.onDestroy();
     }
 
-
     @Override
     protected void onStart() {
         registerReceiver(finishReceiver, new IntentFilter(FINISH));
@@ -98,7 +97,14 @@ public class M8SDLActivity extends SDLActivity {
         edit.setOnTouchListener(new M8TouchListener(M8Keys.EDIT));
     }
 
+    @Override
+    protected String getMainFunction() {
+        return "android_main";
+    }
+
     public native void connect(int fileDescriptor);
+
     public native void disconnect();
+
     public native void loop();
 }

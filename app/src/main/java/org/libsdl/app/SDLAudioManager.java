@@ -1,5 +1,7 @@
 package org.libsdl.app;
 
+import android.content.Context;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -222,6 +224,15 @@ public class SDLAudioManager
                     mAudioTrack.release();
                     mAudioTrack = null;
                     return null;
+                }
+
+                AudioManager audioManager = (AudioManager) SDL.getContext().getSystemService(Context.AUDIO_SERVICE);
+                AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+                for (AudioDeviceInfo device : devices) {
+                    if (device.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+                        Log.d(TAG, "Setting preferred device");
+                        mAudioTrack.setPreferredDevice(device);
+                    }
                 }
 
                 mAudioTrack.play();
