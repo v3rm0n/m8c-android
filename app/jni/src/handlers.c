@@ -10,10 +10,13 @@ Java_io_maido_m8client_M8SDLActivity_loop(JNIEnv *env, jobject thiz) {
 
 JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8SDLActivity_connect(JNIEnv *env, jobject thiz,
-                                             jint fd) {
-    set_file_descriptor(fd);
+                                             jint fd, jint audiodevice) {
+    char s[2];
+    sprintf(s,"%d", audiodevice);
+    SDL_setenv("AAUDIO_DEVICE_ID", s, 1);
     set_usb_init_callback(audio_setup);
     set_usb_destroy_callback(audio_destroy);
+    init_serial_with_file_descriptor(fd);
 }
 
 JNIEXPORT void JNICALL
@@ -23,10 +26,9 @@ Java_io_maido_m8client_M8TouchListener_sendClickEvent(JNIEnv *env, jobject thiz,
 
 JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8SDLActivity_disconnect(JNIEnv *env, jobject thiz) {
-    set_file_descriptor(-1);
+    usb_destroy();
 }
 
 int android_main(int argc, char *argv[]) {
-    SDL_SetHint(SDL_HINT_AUDIODRIVER, "android");
     return SDL_main(argc, argv);
 }

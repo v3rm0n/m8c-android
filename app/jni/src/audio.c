@@ -1,7 +1,6 @@
 #include <libusb.h>
 #include <errno.h>
-#include <SDL_audio.h>
-#include <SDL_log.h>
+#include <SDL.h>
 #include <serial.h>
 
 #define EP_ISO_IN 0x85
@@ -13,6 +12,8 @@
 
 static unsigned long num_bytes = 0, num_xfer = 0;
 static struct timeval tv_start;
+
+SDL_AudioDeviceID audio_device_id = 0;
 
 static int do_exit = 1;
 
@@ -33,7 +34,7 @@ static void cb_xfr(struct libusb_transfer *xfr) {
 
         const uint8_t *data = libusb_get_iso_packet_buffer_simple(xfr, i);
 
-        SDL_QueueAudio(1, data, pack->actual_length);
+        SDL_QueueAudio(audio_device_id, data, pack->actual_length);
 
         len += pack->length;
     }
@@ -128,17 +129,28 @@ int audio_setup(libusb_device_handle *devh) {
         return rc;
     }
 
+    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+        if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
+            return -1;
+        }
+    }
+
     static SDL_AudioSpec audio_spec;
     audio_spec.format = AUDIO_S16;
     audio_spec.channels = 2;
     audio_spec.freq = 44100;
 
-    if (SDL_OpenAudio(&audio_spec, NULL) < 0) {
+    SDL_AudioSpec _obtained;
+    SDL_zero(_obtained);
+
+    audio_device_id = SDL_OpenAudioDevice(NULL, 0, &audio_spec, &_obtained, 0);
+
+    if (audio_device_id == 0) {
         SDL_Log("Couldn't open audio: %s\n", SDL_GetError());
-        exit(-1);
+        return -1;
     }
 
-    SDL_PauseAudio(0);
+    SDL_PauseAudioDevice(audio_device_id, 0);
 
     SDL_Log("Successful init");
     return 1;
@@ -146,7 +158,9 @@ int audio_setup(libusb_device_handle *devh) {
 
 int audio_destroy(libusb_device_handle *devh) {
     SDL_Log("Closing audio");
-    SDL_CloseAudio();
+    if(audio_device_id != 0) {
+        SDL_CloseAudioDevice(audio_device_id);
+    }
     SDL_Log("Audio closed");
     return 1;
 }

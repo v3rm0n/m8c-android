@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -40,7 +42,16 @@ public class M8SDLActivity extends SDLActivity {
         registerReceiver(finishReceiver, new IntentFilter(FINISH));
         int fileDescriptor = getIntent().getIntExtra(FILE_DESCRIPTOR, -1);
         Log.d(TAG, "Setting file descriptor to " + fileDescriptor);
-        connect(fileDescriptor);
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+        int audioDeviceId = 0;
+        for (AudioDeviceInfo device : devices) {
+            if (device.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+                Log.d(TAG, "Speaker device id: " + device.getId());
+                audioDeviceId = device.getId();
+            }
+        }
+        connect(fileDescriptor, audioDeviceId);
         new Thread(() -> {
             while (true) {
                 loop();
@@ -102,7 +113,7 @@ public class M8SDLActivity extends SDLActivity {
         return "android_main";
     }
 
-    public native void connect(int fileDescriptor);
+    public native void connect(int fileDescriptor, int audioDeviceId);
 
     public native void disconnect();
 
