@@ -2,37 +2,39 @@
 
 ![build](https://github.com/v3rm0n/m8c-android/actions/workflows/build.yml/badge.svg)
 
-Android wrapper for the awesome [m8c](https://github.com/laamaa/m8c). Nothing gets close to the real thing so get yours from [here](https://dirtywave.com/products/m8-tracker).
+Android wrapper for the awesome [m8c](https://github.com/laamaa/m8c). 
 
-# Installing
+Nothing gets close to the real thing so get yours from [here](https://dirtywave.com/products/m8-tracker).
 
-It's still in early development. If you want to try it out, check the [releases](https://github.com/v3rm0n/m8c-android/releases) page to install it manually (you need to be able to install from unknown sources).
+## Installing
 
-# Features
+Check the [releases](https://github.com/v3rm0n/m8c-android/releases) page to install it manually (you need to be able to install from unknown sources).
+
+## Features
 
 - [x] Display
 - [x] Game controller input
+- [x] Touch screen input
 - [x] Audio playback
-- [ ] Audio recording
-- [x] Android touch screen input
 
-# Building
+## Building
 
-## Prerequisites
-- Android SDK
-- Android NDK
+### Prerequisites
 
-## Usage
+- Android SDK/NDK
+
+### Usage
 
 - Run `git submodule update --init` to download all dependencies (libusb, m8c, SDL2)
-- Run `./gradlew installDebug` to build and install it to your device_
+- Run `./gradlew installDebug` to build and install it to your device
 
-## Example
+### Example
 
 ![Example](/img/m8_android.jpg)
 
-## Links
+### Links
 
 - [Dirtywave M8 Tracker](https://dirtywave.com/products/m8-tracker)
 - [m8c](https://github.com/laamaa/m8c)
-- [M8 Headless](https://github.com/Dirtywave/M8HeadlessFirmware) 
+- [M8 Headless Firmware](https://github.com/Dirtywave/M8HeadlessFirmware) 
+- [usbaudio-android-demo](https://github.com/shenki/usbaudio-android-demo)
