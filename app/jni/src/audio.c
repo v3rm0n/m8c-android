@@ -1,12 +1,11 @@
 #include <libusb.h>
 #include <errno.h>
-#include <android/log.h>
-#include <jni.h>
 #include <SDL_audio.h>
 #include <SDL_log.h>
+#include <serial.h>
 
-#define EP_ISO_IN    0x85
-#define IFACE_NUM   4
+#define EP_ISO_IN 0x85
+#define IFACE_NUM 4
 
 #define NUM_TRANSFERS 10
 #define PACKET_SIZE 180
@@ -16,11 +15,6 @@ static unsigned long num_bytes = 0, num_xfer = 0;
 static struct timeval tv_start;
 
 static int do_exit = 1;
-
-libusb_device_handle *devh = NULL;
-
-#include <jni.h>
-#include <serial.h>
 
 static void cb_xfr(struct libusb_transfer *xfr) {
     unsigned int i;
@@ -91,7 +85,7 @@ static int benchmark_in(libusb_device_handle *devh, uint8_t ep) {
     return 1;
 }
 
-int audio_setup() {
+int audio_setup(libusb_device_handle *devh) {
     SDL_Log("UsbAudio setup");
 
     int rc;
@@ -150,8 +144,14 @@ int audio_setup() {
     return 1;
 }
 
-JNIEXPORT void JNICALL
-Java_io_maido_m8client_M8SDLActivity_loop(JNIEnv *env, jobject thiz) {
+int audio_destroy(libusb_device_handle *devh) {
+    SDL_Log("Closing audio");
+    SDL_CloseAudio();
+    SDL_Log("Audio closed");
+    return 1;
+}
+
+void audio_loop() {
     while (!do_exit) {
         int rc = libusb_handle_events(NULL);
         if (rc != LIBUSB_SUCCESS) {
@@ -160,18 +160,3 @@ Java_io_maido_m8client_M8SDLActivity_loop(JNIEnv *env, jobject thiz) {
     }
 }
 
-JNIEXPORT void JNICALL
-Java_io_maido_m8client_M8SDLActivity_setFileDescriptor(JNIEnv *env, jobject thiz,
-                                                       jint fd) {
-    set_file_descriptor(fd);
-    if (fd != -1) {
-        init_serial(1);
-        devh = get_handle();
-        audio_setup();
-    }
-}
-
-JNIEXPORT void JNICALL
-Java_io_maido_m8client_M8TouchListener_sendClickEvent(JNIEnv *env, jobject thiz, jchar event) {
-    send_msg_controller(event);
-}

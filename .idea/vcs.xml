@@ -4,6 +4,8 @@
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/app/jni/SDL" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/app/jni/libusb" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/app/jni/libusb/libusb" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/app/jni/m8c" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/app/jni/src/m8c" vcs="Git" />
   </component>
 </project>

@@ -33,6 +33,7 @@
 
     <application
         android:allowBackup="true"
+        android:name=".M8Application"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:hardwareAccelerated="true"
@@ -40,6 +41,9 @@
         android:label="@string/app_name"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
         tools:targetApi="31">
+        <meta-data android:name="io.sentry.dsn" android:value="https://0573811cca7d4543b2b98b7fe5e175f2@o4504323255566336.ingest.sentry.io/4504323256156160" />
+        <meta-data android:name="io.sentry.traces.sample-rate" android:value="1.0" />
+        <meta-data android:name="io.sentry.traces.user-interaction.enable" android:value="true" />
         <activity
             android:name=".M8ClientActivity"
             android:exported="true"

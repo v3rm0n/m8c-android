@@ -23,7 +23,7 @@ public class M8SDLActivity extends SDLActivity {
             String action = intent.getAction();
             if (action.equals(FINISH)) {
                 Log.i(TAG, "Finishing SDL activity");
-                setFileDescriptor(-1);
+                disconnect();
                 finish();
             }
         }
@@ -35,14 +35,13 @@ public class M8SDLActivity extends SDLActivity {
         super.onDestroy();
     }
 
-    public native void loop();
 
     @Override
     protected void onStart() {
         registerReceiver(finishReceiver, new IntentFilter(FINISH));
         int fileDescriptor = getIntent().getIntExtra(FILE_DESCRIPTOR, -1);
         Log.d(TAG, "Setting file descriptor to " + fileDescriptor);
-        setFileDescriptor(fileDescriptor);
+        connect(fileDescriptor);
         new Thread(() -> {
             while (true) {
                 loop();
@@ -99,5 +98,7 @@ public class M8SDLActivity extends SDLActivity {
         edit.setOnTouchListener(new M8TouchListener(M8Keys.EDIT));
     }
 
-    public native void setFileDescriptor(int fileDescriptor);
+    public native void connect(int fileDescriptor);
+    public native void disconnect();
+    public native void loop();
 }
