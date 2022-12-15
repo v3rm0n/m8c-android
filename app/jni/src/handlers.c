@@ -11,9 +11,7 @@ Java_io_maido_m8client_M8SDLActivity_loop(JNIEnv *env, jobject thiz) {
 JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8SDLActivity_connect(JNIEnv *env, jobject thiz,
                                              jint fd, jint audiodevice) {
-    char s[2];
-    sprintf(s,"%d", audiodevice);
-    SDL_setenv("AAUDIO_DEVICE_ID", s, 1);
+    set_audio_device(audiodevice);
     set_usb_init_callback(audio_setup);
     set_usb_destroy_callback(audio_destroy);
     init_serial_with_file_descriptor(fd);

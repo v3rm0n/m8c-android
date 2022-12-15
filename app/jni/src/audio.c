@@ -86,6 +86,12 @@ static int benchmark_in(libusb_device_handle *devh, uint8_t ep) {
     return 1;
 }
 
+int aaudio_device_id = 0;
+
+void set_audio_device(int device_id) {
+    aaudio_device_id = device_id;
+}
+
 int audio_setup(libusb_device_handle *devh) {
     SDL_Log("UsbAudio setup");
 
@@ -143,7 +149,10 @@ int audio_setup(libusb_device_handle *devh) {
     SDL_AudioSpec _obtained;
     SDL_zero(_obtained);
 
-    audio_device_id = SDL_OpenAudioDevice(NULL, 0, &audio_spec, &_obtained, 0);
+    char audio_device_name[2];
+    SDL_itoa(aaudio_device_id, audio_device_name, 10);
+
+    audio_device_id = SDL_OpenAudioDevice(audio_device_name, 0, &audio_spec, &_obtained, 0);
 
     if (audio_device_id == 0) {
         SDL_Log("Couldn't open audio: %s\n", SDL_GetError());

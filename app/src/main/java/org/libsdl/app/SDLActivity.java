@@ -588,6 +588,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             mHIDDeviceManager = null;
         }
 
+        SDLAudioManager.release(this);
+
         if (SDLActivity.mBrokenLibraries) {
            super.onDestroy();
            return;
