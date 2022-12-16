@@ -4,6 +4,11 @@ plugins {
     id 'io.sentry.android.gradle'
 }
 
+sentry {
+    uploadNativeSymbols.set(true)
+    includeNativeSources.set(true)
+}
+
 android {
     namespace 'io.maido.m8client'
     compileSdk 33
