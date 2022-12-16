@@ -13,7 +13,7 @@ JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8SDLActivity_connect(JNIEnv *env, jobject thiz,
                                              jint fd, jint audiodevice) {
     if (android_get_device_api_level() > 27) {
-        SDL_SetHint(SDL_HINT_AUDIODRIVER, "aaudio");
+        SDL_SetHint(SDL_HINT_AUDIODRIVER, "openslES");
     }
     set_audio_device(audiodevice);
     set_usb_init_callback(audio_setup);

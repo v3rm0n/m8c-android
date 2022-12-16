@@ -31,7 +31,7 @@ public class M8SDLActivity extends SDLActivity {
         int audioDeviceId = 0;
         for (AudioDeviceInfo device : devices) {
             if (device.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
-                Log.d(TAG, "Speaker device id: " + device.getId());
+                Log.d(TAG, "Speaker device id: " + device.getId() + " type: " + device.getType() + " is sink: " + device.isSink());
                 audioDeviceId = device.getId();
             }
         }
