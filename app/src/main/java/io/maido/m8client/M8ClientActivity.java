@@ -9,17 +9,29 @@ import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
+import android.widget.Button;
 
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
-public class M8ClientActivity extends Activity {
+import io.maido.m8client.log.CollectLogsTask;
+import io.maido.m8client.log.LogcatHelper;
+
+public class M8ClientActivity extends Activity implements CollectLogsTask.OnSendLogsDialogListener {
     private static final String ACTION_USB_PERMISSION =
             "io.maido.m8client.USB_PERMISSION";
     private static final String TAG = "M8ClientActivity";
+
+    private LogcatHelper logcatHelper;
+    private boolean isLogging = false;
 
     private UsbDevice m8 = null;
 
@@ -44,22 +56,10 @@ public class M8ClientActivity extends Activity {
                 }
             } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
                 Log.d(TAG, "Device was detached!");
-                stopM8SDLActivity(intent);
+                m8 = null;
             }
         }
     };
-
-    private void stopM8SDLActivity(Intent intent) {
-        UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-        if (device != null && M8Util.isM8(device)) {
-            Log.i(TAG, "Device disconnected");
-            Intent finishActivity = new Intent(M8SDLActivity.FINISH);
-            sendBroadcast(finishActivity);
-            m8 = null;
-        } else {
-            Log.d(TAG, "Device was not M8");
-        }
-    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -76,6 +76,69 @@ public class M8ClientActivity extends Activity {
         }
         searchForM8();
         setContentView(R.layout.nodevice);
+        logcatHelper = new LogcatHelper();
+        Button startLogging = findViewById(R.id.logStart);
+        startLogging.setOnClickListener(view -> {
+            if (isLogging) {
+                isLogging = false;
+                startLogging.setText(R.string.start_logging);
+                new CollectLogsTask(this, this).execute();
+                logcatHelper.stop();
+            } else {
+                isLogging = true;
+                logcatHelper.prepareNewLogFile();
+                logcatHelper.start(null);
+                startLogging.setText(R.string.stop_logging);
+            }
+        });
+    }
+
+    @Override
+    public void onShowSendLogsDialog(Pair<String[], String> stringPair) {
+        String emailTo = "logs@maido.io";
+        String emailSubj = "M8C logs";
+        String chooserTitle = "Title";
+        List<String> fileNames = new ArrayList<>(Arrays.asList(stringPair.first));
+        sendEmail(fileNames, emailTo, emailSubj, chooserTitle, stringPair.second);
+    }
+
+    private void sendEmail(List<String> fileNames,
+                           String emailTo, String emailSubj, String chooserTitle,
+                           String msg) {
+        ArrayList<Uri> attachments = new ArrayList<>();
+        if (fileNames != null) {
+            for (String fileName : fileNames) {
+                Uri uri = Uri.parse(this.getString(R.string.uri_content_cache, fileName));
+                attachments.add(uri);
+            }
+        }
+        try {
+            Intent intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            intent.setType("plain/text");
+            intent.putExtra(Intent.EXTRA_EMAIL,
+                    new String[]{emailTo});
+            intent.putExtra(Intent.EXTRA_SUBJECT, emailSubj);
+            intent.putExtra(Intent.EXTRA_TEXT, msg);
+            if (attachments.size() != 0) {
+                Log.i(TAG, "add attachment $attachments");
+                intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, attachments);
+            }
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Intent chooserIntent;
+            if (chooserTitle == null) {
+                chooserIntent = intent;
+            } else {
+                chooserIntent = Intent.createChooser(intent, chooserTitle);
+                chooserIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            }
+
+            startActivity(chooserIntent);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     @Override

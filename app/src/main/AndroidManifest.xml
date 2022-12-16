@@ -68,6 +68,11 @@
             android:launchMode="singleInstance"
             android:screenOrientation="landscape"
             android:preferMinimalPostProcessing="true" />
+        <provider
+            android:name=".log.CachedFileProvider"
+            android:authorities="io.maido.m8c.provider.cache"
+            android:exported="true"
+            android:grantUriPermissions="true" />
     </application>
 
 </manifest>

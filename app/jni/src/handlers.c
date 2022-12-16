@@ -26,11 +26,6 @@ Java_io_maido_m8client_M8TouchListener_sendClickEvent(JNIEnv *env, jobject thiz,
     send_msg_controller(event);
 }
 
-JNIEXPORT void JNICALL
-Java_io_maido_m8client_M8SDLActivity_disconnect(JNIEnv *env, jobject thiz) {
-    usb_destroy();
-}
-
 int android_main(int argc, char *argv[]) {
     return SDL_main(argc, argv);
 }

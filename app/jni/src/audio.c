@@ -29,7 +29,7 @@ static void cb_xfr(struct libusb_transfer *xfr) {
             SDL_Log("Error (status %d: %s) :", pack->status,
                     libusb_error_name(pack->status));
             /* This doesn't happen, so bail out if it does. */
-            exit(EXIT_FAILURE);
+            return;
         }
 
         const uint8_t *data = libusb_get_iso_packet_buffer_simple(xfr, i);
@@ -44,7 +44,6 @@ static void cb_xfr(struct libusb_transfer *xfr) {
 
     if (libusb_submit_transfer(xfr) < 0) {
         SDL_Log("error re-submitting URB\n");
-        exit(1);
     }
 }
 
@@ -93,7 +92,7 @@ void set_audio_device(int device_id) {
 }
 
 int audio_setup(libusb_device_handle *devh) {
-    SDL_Log("UsbAudio setup");
+    SDL_Log("USB audio setup");
 
     int rc;
 
@@ -104,8 +103,6 @@ int audio_setup(libusb_device_handle *devh) {
         if (rc < 0) {
             SDL_Log("Could not detach kernel driver: %s\n",
                     libusb_error_name(rc));
-            libusb_close(devh);
-            libusb_exit(NULL);
             return rc;
         }
     }
@@ -113,16 +110,12 @@ int audio_setup(libusb_device_handle *devh) {
     rc = libusb_claim_interface(devh, IFACE_NUM);
     if (rc < 0) {
         SDL_Log("Error claiming interface: %s\n", libusb_error_name(rc));
-        libusb_close(devh);
-        libusb_exit(NULL);
         return rc;
     }
 
     rc = libusb_set_interface_alt_setting(devh, IFACE_NUM, 1);
     if (rc < 0) {
         SDL_Log("Error setting alt setting: %s\n", libusb_error_name(rc));
-        libusb_close(devh);
-        libusb_exit(NULL);
         return rc;
     }
 
@@ -137,8 +130,11 @@ int audio_setup(libusb_device_handle *devh) {
 
     if (!SDL_WasInit(SDL_INIT_AUDIO)) {
         if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
+            SDL_Log("Init audio failed %s", SDL_GetError());
             return -1;
         }
+    } else {
+        SDL_Log("Audio was already initialised");
     }
 
     static SDL_AudioSpec audio_spec;
@@ -153,8 +149,7 @@ int audio_setup(libusb_device_handle *devh) {
 
     if (SDL_strcasecmp(SDL_GetCurrentAudioDriver(), "openslES") == 0) {
         audio_device_id = SDL_OpenAudioDevice(NULL, 0, &audio_spec, &_obtained, 0);
-    }
-    else if (aaudio_device_id != 0) {
+    } else if (aaudio_device_id != 0) {
         int n = (int) (log10(aaudio_device_id) + 1);
         char audio_device_name[n];
         SDL_itoa(aaudio_device_id, audio_device_name, 10);
@@ -175,7 +170,7 @@ int audio_setup(libusb_device_handle *devh) {
 
 int audio_destroy(libusb_device_handle *devh) {
     SDL_Log("Closing audio");
-    if(audio_device_id != 0) {
+    if (audio_device_id != 0) {
         SDL_CloseAudioDevice(audio_device_id);
     }
     SDL_Log("Audio closed");

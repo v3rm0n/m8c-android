@@ -1,9 +1,6 @@
 package io.maido.m8client;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -19,18 +16,6 @@ public class M8SDLActivity extends SDLActivity {
 
     private static final String TAG = "M8SDLActivity";
 
-
-    BroadcastReceiver finishReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action.equals(FINISH)) {
-                Log.i(TAG, "Finishing SDL activity");
-                disconnect();
-                finish();
-            }
-        }
-    };
-
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy");
@@ -39,7 +24,6 @@ public class M8SDLActivity extends SDLActivity {
 
     @Override
     protected void onStart() {
-        registerReceiver(finishReceiver, new IntentFilter(FINISH));
         int fileDescriptor = getIntent().getIntExtra(FILE_DESCRIPTOR, -1);
         Log.d(TAG, "Setting file descriptor to " + fileDescriptor);
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -58,12 +42,6 @@ public class M8SDLActivity extends SDLActivity {
             }
         }).start();
         super.onStart();
-    }
-
-    @Override
-    protected void onStop() {
-        unregisterReceiver(finishReceiver);
-        super.onStop();
     }
 
     @Override
@@ -114,8 +92,6 @@ public class M8SDLActivity extends SDLActivity {
     }
 
     public native void connect(int fileDescriptor, int audioDeviceId);
-
-    public native void disconnect();
 
     public native void loop();
 }

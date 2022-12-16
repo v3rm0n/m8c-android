@@ -9,4 +9,8 @@
     <string name="play">Play</string>
     <string name="shift">Shift</string>
     <string name="connect_your_m8_device">Connect your M8 device!</string>
+    <string name="start_logging">Start logging</string>
+    <string name="stop_logging">Submit logs</string>
+    <string name="uri_content_cache">content://io.maido.m8c.provider.cache/%1$s</string>
+    <string name="uri_authority_cache">io.maido.m8c.provider.cache</string>
 </resources>
