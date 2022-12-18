@@ -12,11 +12,11 @@ class M8TouchListener implements View.OnTouchListener {
 
     private static final String TAG = M8TouchListener.class.getSimpleName();
 
-    private static final Set<M8Keys> modifiers = new HashSet<>();
+    private static final Set<M8Key> modifiers = new HashSet<>();
 
-    private final M8Keys key;
+    private final M8Key key;
 
-    public M8TouchListener(M8Keys key) {
+    public M8TouchListener(M8Key key) {
         this.key = key;
     }
 

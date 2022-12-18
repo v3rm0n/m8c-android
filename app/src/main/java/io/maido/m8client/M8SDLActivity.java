@@ -79,22 +79,22 @@ public class M8SDLActivity extends SDLActivity {
 
     private void setButtonListeners() {
         View up = findViewById(R.id.up);
-        up.setOnTouchListener(new M8TouchListener(M8Keys.UP));
+        up.setOnTouchListener(new M8TouchListener(M8Key.UP));
         View down = findViewById(R.id.down);
-        down.setOnTouchListener(new M8TouchListener(M8Keys.DOWN));
+        down.setOnTouchListener(new M8TouchListener(M8Key.DOWN));
         View left = findViewById(R.id.left);
-        left.setOnTouchListener(new M8TouchListener(M8Keys.LEFT));
+        left.setOnTouchListener(new M8TouchListener(M8Key.LEFT));
         View right = findViewById(R.id.right);
-        right.setOnTouchListener(new M8TouchListener(M8Keys.RIGHT));
+        right.setOnTouchListener(new M8TouchListener(M8Key.RIGHT));
 
         View play = findViewById(R.id.play);
-        play.setOnTouchListener(new M8TouchListener(M8Keys.PLAY));
+        play.setOnTouchListener(new M8TouchListener(M8Key.PLAY));
         View shift = findViewById(R.id.shift);
-        shift.setOnTouchListener(new M8TouchListener(M8Keys.SHIFT));
+        shift.setOnTouchListener(new M8TouchListener(M8Key.SHIFT));
         View option = findViewById(R.id.option);
-        option.setOnTouchListener(new M8TouchListener(M8Keys.OPTION));
+        option.setOnTouchListener(new M8TouchListener(M8Key.OPTION));
         View edit = findViewById(R.id.edit);
-        edit.setOnTouchListener(new M8TouchListener(M8Keys.EDIT));
+        edit.setOnTouchListener(new M8TouchListener(M8Key.EDIT));
     }
 
     @Override
