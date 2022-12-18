@@ -7,10 +7,11 @@ import android.os.AsyncTask;
 import android.util.Pair;
 
 public class CollectLogsTask extends AsyncTask<Void, Integer, Pair<String[], String>> {
-    private OnSendLogsDialogListener mListener;
     public static final String LOGS_ZIP_FILE_NAME = "logs.zip";
 
-    public CollectLogsTask(Activity activity, OnSendLogsDialogListener listener) {
+    private OnSendLogsDialogListener mListener;
+
+    public CollectLogsTask(OnSendLogsDialogListener listener) {
         mListener = listener;
     }
 

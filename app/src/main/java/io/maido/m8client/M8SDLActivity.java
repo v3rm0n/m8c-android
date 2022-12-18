@@ -1,7 +1,9 @@
 package io.maido.m8client;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
+import android.hardware.usb.UsbDeviceConnection;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.util.Log;
@@ -11,30 +13,22 @@ import android.widget.FrameLayout;
 import org.libsdl.app.SDLActivity;
 
 public class M8SDLActivity extends SDLActivity {
-    public static String FINISH = M8SDLActivity.class.getSimpleName() + ".FINISH";
-    public static String FILE_DESCRIPTOR = M8SDLActivity.class.getSimpleName() + ".FILE_DESCRIPTOR";
+    private static final String FILE_DESCRIPTOR = M8SDLActivity.class.getSimpleName() + ".FILE_DESCRIPTOR";
 
     private static final String TAG = "M8SDLActivity";
 
-    @Override
-    protected void onDestroy() {
-        Log.d(TAG, "onDestroy");
-        super.onDestroy();
+    public static void startM8SDLActivity(Context context, UsbDeviceConnection connection) {
+        Intent sdlActivity = new Intent(context, M8SDLActivity.class);
+        sdlActivity.putExtra(M8SDLActivity.FILE_DESCRIPTOR, connection.getFileDescriptor());
+        context.startActivity(sdlActivity);
     }
 
     @Override
     protected void onStart() {
+        hideButtonsOnPortrait(getResources().getConfiguration().orientation);
         int fileDescriptor = getIntent().getIntExtra(FILE_DESCRIPTOR, -1);
-        Log.d(TAG, "Setting file descriptor to " + fileDescriptor);
-        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
-        int audioDeviceId = 0;
-        for (AudioDeviceInfo device : devices) {
-            if (device.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
-                Log.d(TAG, "Speaker device id: " + device.getId() + " type: " + device.getType() + " is sink: " + device.isSink());
-                audioDeviceId = device.getId();
-            }
-        }
+        int audioDeviceId = getBuiltInSpeakerId();
+        Log.d(TAG, "Setting file descriptor to " + fileDescriptor + " and audio device to " + audioDeviceId);
         connect(fileDescriptor, audioDeviceId);
         new Thread(() -> {
             while (true) {
@@ -44,29 +38,46 @@ public class M8SDLActivity extends SDLActivity {
         super.onStart();
     }
 
+    private int getBuiltInSpeakerId() {
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+        int audioDeviceId = 0;
+        for (AudioDeviceInfo device : devices) {
+            if (device.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+                Log.d(TAG, "Speaker device id: " + device.getId() + " type: " + device.getType() + " is sink: " + device.isSink());
+                audioDeviceId = device.getId();
+            }
+        }
+        return audioDeviceId;
+    }
+
     @Override
     public void setContentView(View view) {
         FrameLayout mainLayout = new FrameLayout(this);
         mainLayout.addView(view);
         getLayoutInflater().inflate(R.layout.m8layout, mainLayout, true);
         super.setContentView(mainLayout);
-        addListeners();
+        setButtonListeners();
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+        super.onConfigurationChanged(newConfig);
+        hideButtonsOnPortrait(newConfig.orientation);
+    }
+
+    private void hideButtonsOnPortrait(int currentOrientation) {
+        if (currentOrientation == Configuration.ORIENTATION_PORTRAIT) {
             View buttons = findViewById(R.id.buttons);
             buttons.setVisibility(View.INVISIBLE);
         }
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
             View buttons = findViewById(R.id.buttons);
             buttons.setVisibility(View.VISIBLE);
         }
-        super.onConfigurationChanged(newConfig);
     }
 
-    private void addListeners() {
+    private void setButtonListeners() {
         View up = findViewById(R.id.up);
         up.setOnTouchListener(new M8TouchListener(M8Keys.UP));
         View down = findViewById(R.id.down);

@@ -66,7 +66,6 @@ public class LogcatHelper {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                return;
             } finally {
                 if (logcatProc != null) {
                     logcatProc.destroy();
@@ -87,11 +86,9 @@ public class LogcatHelper {
         }
     };
 
-
     public void prepareNewLogFile() {
         prepareNewLogFile.set(true);
     }
-
 
     public void start(String filter) {
         packageFilter.set(filter);
