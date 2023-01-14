@@ -4,7 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.hardware.usb.UsbDeviceConnection;
-import android.media.AudioDeviceInfo;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.util.Log;
 import android.view.View;
@@ -14,12 +15,14 @@ import org.libsdl.app.SDLActivity;
 
 public class M8SDLActivity extends SDLActivity {
     private static final String FILE_DESCRIPTOR = M8SDLActivity.class.getSimpleName() + ".FILE_DESCRIPTOR";
+    private static final String AUDIO_DEVICE = M8SDLActivity.class.getSimpleName() + ".AUDIO_DEVICE";
 
     private static final String TAG = "M8SDLActivity";
 
-    public static void startM8SDLActivity(Context context, UsbDeviceConnection connection) {
+    public static void startM8SDLActivity(Context context, UsbDeviceConnection connection, int audioDeviceId) {
         Intent sdlActivity = new Intent(context, M8SDLActivity.class);
         sdlActivity.putExtra(M8SDLActivity.FILE_DESCRIPTOR, connection.getFileDescriptor());
+        sdlActivity.putExtra(M8SDLActivity.AUDIO_DEVICE, audioDeviceId);
         context.startActivity(sdlActivity);
     }
 
@@ -27,7 +30,7 @@ public class M8SDLActivity extends SDLActivity {
     protected void onStart() {
         hideButtonsOnPortrait(getResources().getConfiguration().orientation);
         int fileDescriptor = getIntent().getIntExtra(FILE_DESCRIPTOR, -1);
-        int audioDeviceId = getBuiltInSpeakerId();
+        int audioDeviceId = getIntent().getIntExtra(AUDIO_DEVICE, 0);
         Log.d(TAG, "Setting file descriptor to " + fileDescriptor + " and audio device to " + audioDeviceId);
         connect(fileDescriptor, audioDeviceId);
         new Thread(() -> {
@@ -36,19 +39,6 @@ public class M8SDLActivity extends SDLActivity {
             }
         }).start();
         super.onStart();
-    }
-
-    private int getBuiltInSpeakerId() {
-        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
-        int audioDeviceId = 0;
-        for (AudioDeviceInfo device : devices) {
-            if (device.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
-                Log.d(TAG, "Speaker device id: " + device.getId() + " type: " + device.getType() + " is sink: " + device.isSink());
-                audioDeviceId = device.getId();
-            }
-        }
-        return audioDeviceId;
     }
 
     @Override

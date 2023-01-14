@@ -1,5 +1,7 @@
 package io.maido.m8client;
 
+import static java.util.Arrays.stream;
+
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,12 +10,24 @@ import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
+import android.media.AudioAttributes;
+import android.media.AudioDeviceInfo;
+import android.media.AudioFocusRequest;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import io.maido.m8client.log.LogCollectorActivity;
 
@@ -23,6 +37,8 @@ public class M8StartActivity extends LogCollectorActivity {
     private static final String TAG = "M8StartActivity";
 
     private UsbDevice m8 = null;
+
+    private AudioDevice audioDevice = null;
 
     private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
 
@@ -50,6 +66,18 @@ public class M8StartActivity extends LogCollectorActivity {
         }
     };
 
+    private AudioDevice getBuiltInSpeaker() {
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+        for (AudioDeviceInfo device : devices) {
+            if (device.getType() == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+                Log.d(TAG, "Speaker device id: " + device.getId() + " type: " + device.getType() + " is sink: " + device.isSink());
+                return new AudioDevice(device);
+            }
+        }
+        return null;
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
@@ -57,7 +85,68 @@ public class M8StartActivity extends LogCollectorActivity {
         M8Util.copyGameControllerDB(this);
         connectToM8();
         setContentView(R.layout.nodevice);
+        Spinner audioDeviceList = findViewById(R.id.audioDevice);
+        List<AudioDevice> devices = getAllAudioOutputDevices();
+        ArrayAdapter<AudioDevice> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, devices);
+        adapter.setDropDownViewResource(android.R.layout
+                .simple_spinner_dropdown_item);
+        audioDeviceList.setAdapter(adapter);
+        audioDevice = getBuiltInSpeaker();
+        audioDeviceList.setSelection(devices.indexOf(audioDevice));
+        audioDeviceList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                audioDevice = devices.get(i);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                audioDevice = getBuiltInSpeaker();
+            }
+        });
         super.onCreate(savedInstanceState);
+    }
+
+    static class AudioDevice {
+        private final String name;
+        private final int type;
+        private final int deviceId;
+
+        public AudioDevice(AudioDeviceInfo info) {
+            this.name = info.getProductName().toString();
+            this.type = info.getType();
+            this.deviceId = info.getId();
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return name + " " + type;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            AudioDevice that = (AudioDevice) o;
+            return type == that.type && deviceId == that.deviceId && Objects.equals(name, that.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, type, deviceId);
+        }
+    }
+
+    private List<AudioDevice> getAllAudioOutputDevices() {
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+        return stream(devices)
+                .filter(AudioDeviceInfo::isSink)
+                .filter(device -> device.getType() != AudioDeviceInfo.TYPE_BUILTIN_EARPIECE)
+                .map(AudioDevice::new)
+                .collect(Collectors.toList());
     }
 
     private void connectToM8() {
@@ -120,7 +209,7 @@ public class M8StartActivity extends LogCollectorActivity {
         if (connection != null) {
             Log.d(TAG, "Setting device with id: " + usbDevice.getDeviceId() + " and file descriptor: " + connection.getFileDescriptor());
             m8 = usbDevice;
-            M8SDLActivity.startM8SDLActivity(this, connection);
+            M8SDLActivity.startM8SDLActivity(this, connection, audioDevice.deviceId);
         }
     }
 
