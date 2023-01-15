@@ -12,4 +12,13 @@
     <string name="stop_logging">Submit logs</string>
     <string name="uri_content_cache">content://io.maido.m8c.provider.cache/%1$s</string>
     <string name="uri_authority_cache">io.maido.m8c.provider.cache</string>
+    <string name="start">Start</string>
+    <string name="show_onscreen_buttons">Show onscreen buttons</string>
+    <string name="choose_audio_device">Choose audio device</string>
+    <string name="choose_audio_driver">Choose audio driver</string>
+    <string-array name="audio_drivers">
+        <item>AAudio</item>
+        <item>android</item>
+        <item>openslES</item>
+    </string-array>
 </resources>

@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <serial.h>
 #include "audio.h"
+#include "SDL.h"
 
 JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8SDLActivity_loop(JNIEnv *env, jobject thiz) {
@@ -19,4 +20,10 @@ Java_io_maido_m8client_M8SDLActivity_connect(JNIEnv *env, jobject thiz,
 JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8TouchListener_sendClickEvent(JNIEnv *env, jobject thiz, jchar event) {
     send_msg_controller(event);
+}
+
+JNIEXPORT void JNICALL
+Java_io_maido_m8client_M8SDLActivity_setAudioDriver(JNIEnv *env, jobject thiz,
+                                                    jstring audio_driver) {
+    SDL_SetHint(SDL_HINT_AUDIODRIVER, audio_driver);
 }

@@ -2,6 +2,8 @@ package io.maido.m8client;
 
 import static java.util.Arrays.stream;
 
+import static io.maido.m8client.M8SDLActivity.startM8SDLActivity;
+
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,23 +12,21 @@ import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
-import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
-import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.Spinner;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.maido.m8client.log.LogCollectorActivity;
@@ -36,9 +36,11 @@ public class M8StartActivity extends LogCollectorActivity {
             "io.maido.m8client.USB_PERMISSION";
     private static final String TAG = "M8StartActivity";
 
-    private UsbDevice m8 = null;
+    private boolean showButtons = true;
 
     private AudioDevice audioDevice = null;
+
+    private String audioDriver = "AAudio";
 
     private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
 
@@ -61,7 +63,6 @@ public class M8StartActivity extends LogCollectorActivity {
                 }
             } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
                 Log.d(TAG, "Device was detached!");
-                m8 = null;
             }
         }
     };
@@ -83,8 +84,34 @@ public class M8StartActivity extends LogCollectorActivity {
         Log.d(TAG, "onCreate");
         registerReceiver(usbReceiver, new IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED));
         M8Util.copyGameControllerDB(this);
-        connectToM8();
         setContentView(R.layout.nodevice);
+        setUpAudioDeviceSpinner();
+        Spinner audioDriverSpinner = findViewById(R.id.audioDriver);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.audio_drivers, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        audioDriverSpinner.setAdapter(adapter);
+        audioDriverSpinner.setSelection(0);
+        audioDriverSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                audioDriver = getResources().getStringArray(R.array.audio_drivers)[i];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                audioDriver = "AAudio";
+            }
+        });
+        Button start = findViewById(R.id.startButton);
+        start.setOnClickListener(view -> searchForM8());
+        CheckBox showButtonsView = findViewById(R.id.showButtons);
+        showButtonsView.setChecked(showButtons);
+        showButtonsView.setOnCheckedChangeListener((compoundButton, b) -> showButtons = b);
+        super.onCreate(savedInstanceState);
+    }
+
+    private void setUpAudioDeviceSpinner() {
         Spinner audioDeviceList = findViewById(R.id.audioDevice);
         List<AudioDevice> devices = getAllAudioOutputDevices();
         ArrayAdapter<AudioDevice> adapter = new ArrayAdapter<>(this,
@@ -105,38 +132,6 @@ public class M8StartActivity extends LogCollectorActivity {
                 audioDevice = getBuiltInSpeaker();
             }
         });
-        super.onCreate(savedInstanceState);
-    }
-
-    static class AudioDevice {
-        private final String name;
-        private final int type;
-        private final int deviceId;
-
-        public AudioDevice(AudioDeviceInfo info) {
-            this.name = info.getProductName().toString();
-            this.type = info.getType();
-            this.deviceId = info.getId();
-        }
-
-        @NonNull
-        @Override
-        public String toString() {
-            return name + " " + type;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            AudioDevice that = (AudioDevice) o;
-            return type == that.type && deviceId == that.deviceId && Objects.equals(name, that.name);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name, type, deviceId);
-        }
     }
 
     private List<AudioDevice> getAllAudioOutputDevices() {
@@ -149,18 +144,6 @@ public class M8StartActivity extends LogCollectorActivity {
                 .collect(Collectors.toList());
     }
 
-    private void connectToM8() {
-        UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        UsbDevice usbDevice = getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
-        // Activity was launched by attaching the USB device so permissions are implicitly granted
-        if (usbDevice != null) {
-            Log.i(TAG, "M8 was attached, launching application");
-            connectToM8(usbManager, usbDevice);
-        }
-        searchForM8();
-    }
-
-
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy");
@@ -168,18 +151,7 @@ public class M8StartActivity extends LogCollectorActivity {
         super.onDestroy();
     }
 
-    @Override
-    protected void onResume() {
-        Log.d(TAG, "onResume");
-        searchForM8();
-        super.onResume();
-    }
-
     private void searchForM8() {
-        if (m8 != null) {
-            Log.i(TAG, "M8 already found, skipping");
-            return;
-        }
         Log.i(TAG, "Searching for an M8 device");
         UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
@@ -208,8 +180,7 @@ public class M8StartActivity extends LogCollectorActivity {
         UsbDeviceConnection connection = usbManager.openDevice(usbDevice);
         if (connection != null) {
             Log.d(TAG, "Setting device with id: " + usbDevice.getDeviceId() + " and file descriptor: " + connection.getFileDescriptor());
-            m8 = usbDevice;
-            M8SDLActivity.startM8SDLActivity(this, connection, audioDevice.deviceId);
+            startM8SDLActivity(this, connection, audioDevice.getDeviceId(), showButtons, audioDriver);
         }
     }
 
