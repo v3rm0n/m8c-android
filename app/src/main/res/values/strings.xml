@@ -21,4 +21,12 @@
         <item>android</item>
         <item>openslES</item>
     </string-array>
+    <string name="audio_header">Audio</string>
+    <string name="other">Other</string>
+    <string name="audio_driver_pref">audio_driver</string>
+    <string name="audio_device_pref">audio_device</string>
+    <string name="buttons_pref">buttons</string>
+    <string name="ui">User Interface</string>
+    <string name="lock_orientation_pref">lock_orientation</string>
+    <string name="lock_landscape">Lock to landscape orientation</string>
 </resources>

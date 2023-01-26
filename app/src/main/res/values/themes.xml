@@ -1,5 +1,4 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.M8Client" parent="@android:style/Theme.NoTitleBar.Fullscreen">
-    </style>
+    <style name="Theme.M8Client" parent="Theme.AppCompat.NoActionBar" />
 </resources>
