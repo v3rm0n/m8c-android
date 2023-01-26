@@ -32,8 +32,8 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
             if (ACTION_USB_PERMISSION == action) {
                 synchronized(this) {
                     val device = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
-                    val usbManager = getSystemService(USB_SERVICE) as UsbManager
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        val usbManager = getSystemService(USB_SERVICE) as UsbManager
                         if (device != null && isM8(device)) {
                             connectToM8(usbManager, device)
                         } else {
@@ -91,15 +91,22 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
             connectToM8(usbManager, usbDevice)
         } else {
             Log.i(TAG, "Requesting USB device permission")
-            val permissionIntent = PendingIntent.getBroadcast(
-                this, 0, Intent(
-                    ACTION_USB_PERMISSION
-                ), PendingIntent.FLAG_IMMUTABLE
-            )
-            val filter = IntentFilter(ACTION_USB_PERMISSION)
-            registerReceiver(usbReceiver, filter)
-            usbManager.requestPermission(usbDevice, permissionIntent)
+            requestM8Permission(usbManager, usbDevice)
         }
+    }
+
+    private fun requestM8Permission(
+        usbManager: UsbManager,
+        usbDevice: UsbDevice
+    ) {
+        val permissionIntent = PendingIntent.getBroadcast(
+            this, 0, Intent(
+                ACTION_USB_PERMISSION
+            ), PendingIntent.FLAG_IMMUTABLE
+        )
+        val filter = IntentFilter(ACTION_USB_PERMISSION)
+        registerReceiver(usbReceiver, filter)
+        usbManager.requestPermission(usbDevice, permissionIntent)
     }
 
     private fun connectToM8(usbManager: UsbManager, usbDevice: UsbDevice) {

@@ -30,3 +30,8 @@ Java_io_maido_m8client_M8SDLActivity_setAudioDriver(JNIEnv *env, jobject thiz,
     SDL_Log("Setting audio driver to %s", path);
     SDL_SetHint(SDL_HINT_AUDIODRIVER, path);
 }
+
+JNIEXPORT void JNICALL
+Java_io_maido_m8client_M8TouchListener_resetScreen(JNIEnv *env, jobject thiz) {
+    reset_display();
+}

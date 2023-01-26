@@ -5,13 +5,11 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.hardware.usb.UsbDeviceConnection
 import android.util.Log
-import android.view.GestureDetector
-import android.view.GestureDetector.SimpleOnGestureListener
-import android.view.MotionEvent
 import android.view.View
-import android.view.View.OnTouchListener
 import android.widget.FrameLayout
+import android.widget.RelativeLayout
 import org.libsdl.app.SDLActivity
+
 
 class M8SDLActivity : SDLActivity() {
 
@@ -67,27 +65,6 @@ class M8SDLActivity : SDLActivity() {
     override fun setContentView(view: View) {
         val mainLayout = FrameLayout(this)
         mainLayout.addView(view)
-        view.setOnTouchListener(object : OnTouchListener {
-            private val gestureDetector = GestureDetector(this@M8SDLActivity,
-                object : SimpleOnGestureListener() {
-                    override fun onDoubleTap(e: MotionEvent): Boolean {
-                        Log.d("TEST", "onDoubleTap")
-                        return true
-                    }
-
-                    override fun onLongPress(e: MotionEvent) {
-                        Log.d("TEST", "onLongPress")
-                    }
-                })
-
-            override fun onTouch(v: View, event: MotionEvent): Boolean {
-                if (gestureDetector.onTouchEvent(event)) {
-                    v.performClick()
-                    return true
-                }
-                return false
-            }
-        })
         layoutInflater.inflate(R.layout.m8layout, mainLayout, true)
         super.setContentView(mainLayout)
         setButtonListeners()
@@ -113,21 +90,21 @@ class M8SDLActivity : SDLActivity() {
 
     private fun setButtonListeners() {
         val up = findViewById<View>(R.id.up)
-        up.setOnTouchListener(M8TouchListener(M8Key.UP))
+        up.setOnTouchListener(M8TouchListener(M8Key.UP, this::finish))
         val down = findViewById<View>(R.id.down)
-        down.setOnTouchListener(M8TouchListener(M8Key.DOWN))
+        down.setOnTouchListener(M8TouchListener(M8Key.DOWN, this::finish))
         val left = findViewById<View>(R.id.left)
-        left.setOnTouchListener(M8TouchListener(M8Key.LEFT))
+        left.setOnTouchListener(M8TouchListener(M8Key.LEFT, this::finish))
         val right = findViewById<View>(R.id.right)
-        right.setOnTouchListener(M8TouchListener(M8Key.RIGHT))
+        right.setOnTouchListener(M8TouchListener(M8Key.RIGHT, this::finish))
         val play = findViewById<View>(R.id.play)
-        play.setOnTouchListener(M8TouchListener(M8Key.PLAY))
+        play.setOnTouchListener(M8TouchListener(M8Key.PLAY, this::finish))
         val shift = findViewById<View>(R.id.shift)
-        shift.setOnTouchListener(M8TouchListener(M8Key.SHIFT))
+        shift.setOnTouchListener(M8TouchListener(M8Key.SHIFT, this::finish))
         val option = findViewById<View>(R.id.option)
-        option.setOnTouchListener(M8TouchListener(M8Key.OPTION))
+        option.setOnTouchListener(M8TouchListener(M8Key.OPTION, this::finish))
         val edit = findViewById<View>(R.id.edit)
-        edit.setOnTouchListener(M8TouchListener(M8Key.EDIT))
+        edit.setOnTouchListener(M8TouchListener(M8Key.EDIT, this::finish))
     }
 
     override fun getMainFunction() = "android_main"

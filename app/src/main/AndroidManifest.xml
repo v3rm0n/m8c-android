@@ -29,7 +29,7 @@
 
     <uses-permission
         android:name="android.permission.RECORD_AUDIO"
-        android:required="false" />
+        android:required="true" />
 
     <application
         android:name=".M8Application"
@@ -61,6 +61,12 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/device_filter" />
         </activity>
         <activity
             android:name=".M8SDLActivity"
