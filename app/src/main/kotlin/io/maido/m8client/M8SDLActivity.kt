@@ -90,21 +90,22 @@ class M8SDLActivity : SDLActivity() {
 
     private fun setButtonListeners() {
         val up = findViewById<View>(R.id.up)
-        up.setOnTouchListener(M8TouchListener(M8Key.UP, this::finish))
+        up.setOnTouchListener(M8TouchListener(M8Key.UP))
         val down = findViewById<View>(R.id.down)
-        down.setOnTouchListener(M8TouchListener(M8Key.DOWN, this::finish))
+        down.setOnTouchListener(M8TouchListener(M8Key.DOWN))
         val left = findViewById<View>(R.id.left)
-        left.setOnTouchListener(M8TouchListener(M8Key.LEFT, this::finish))
+        left.setOnTouchListener(M8TouchListener(M8Key.LEFT))
         val right = findViewById<View>(R.id.right)
-        right.setOnTouchListener(M8TouchListener(M8Key.RIGHT, this::finish))
+        right.setOnTouchListener(M8TouchListener(M8Key.RIGHT))
         val play = findViewById<View>(R.id.play)
-        play.setOnTouchListener(M8TouchListener(M8Key.PLAY, this::finish))
+        play.setOnTouchListener(M8TouchListener(M8Key.PLAY))
         val shift = findViewById<View>(R.id.shift)
-        shift.setOnTouchListener(M8TouchListener(M8Key.SHIFT, this::finish))
+        shift.setOnTouchListener(M8TouchListener(M8Key.SHIFT))
         val option = findViewById<View>(R.id.option)
-        option.setOnTouchListener(M8TouchListener(M8Key.OPTION, this::finish))
+        option.setOnTouchListener(M8TouchListener(M8Key.OPTION))
         val edit = findViewById<View>(R.id.edit)
-        edit.setOnTouchListener(M8TouchListener(M8Key.EDIT, this::finish))
+        edit.setOnTouchListener(M8TouchListener(M8Key.EDIT))
+        M8TouchListener.resetModifiers()
     }
 
     override fun getMainFunction() = "android_main"

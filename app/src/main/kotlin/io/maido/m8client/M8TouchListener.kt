@@ -9,7 +9,6 @@ import android.view.View.OnTouchListener
 
 internal class M8TouchListener(
     private val key: M8Key,
-    private val exitHandler: () -> Unit
 ) : OnTouchListener {
     private val reset = 132.toChar()
     private val exit = 96.toChar()
@@ -24,7 +23,7 @@ internal class M8TouchListener(
                     }
                     exit -> {
                         Log.d(TAG, "Sending exit")
-                        exitHandler()
+                        exit()
                     }
                     else -> {
                         Log.d(TAG, "Sending $key as ${code.code}")
@@ -46,8 +45,11 @@ internal class M8TouchListener(
 
     private external fun resetScreen()
 
+    private external fun exit()
+
     companion object {
         private val TAG = M8TouchListener::class.simpleName
         private val modifiers = HashSet<M8Key>()
+        fun resetModifiers() = modifiers.clear()
     }
 }

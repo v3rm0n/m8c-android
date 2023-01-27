@@ -35,3 +35,12 @@ JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8TouchListener_resetScreen(JNIEnv *env, jobject thiz) {
     reset_display();
 }
+
+JNIEXPORT void JNICALL
+Java_io_maido_m8client_M8TouchListener_exit(JNIEnv *env, jobject thiz) {
+    SDL_Event sdlevent = {};
+    sdlevent.type = SDL_KEYDOWN;
+    sdlevent.key.keysym.sym = SDLK_F4;
+    sdlevent.key.keysym.mod = KMOD_ALT;
+    SDL_PushEvent(&sdlevent);
+}

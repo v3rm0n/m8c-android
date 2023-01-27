@@ -167,9 +167,21 @@ int audio_setup(libusb_device_handle *devh) {
 
 int audio_destroy(libusb_device_handle *devh) {
     SDL_Log("Closing audio");
+
+    int rc;
+
+    do_exit = 1;
+
+    rc = libusb_release_interface(devh, IFACE_NUM);
+    if (rc < 0) {
+        SDL_Log("Error releasing interface: %s\n", libusb_error_name(rc));
+        return rc;
+    }
+
     if (audio_device_id != 0) {
         SDL_CloseAudioDevice(audio_device_id);
     }
+
     SDL_Log("Audio closed");
     return 1;
 }
