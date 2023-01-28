@@ -898,6 +898,16 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         return result;
     }
 
+    public static void onTouch(int touchDevId, int pointerFingerId,
+                               int action, float x,
+                               float y, float p) {
+        SDLActivity.mSingleton.onSDLTouch(touchDevId, pointerFingerId, action, x, y, p);
+        onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
+    }
+
+    protected void onSDLTouch(int touchDevId, int pointerFingerId, int action, float x, float y, float p) {
+    }
+
     // C functions we call
     public static native String nativeGetVersion();
     public static native int nativeSetupJNI();

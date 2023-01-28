@@ -2,13 +2,15 @@ package io.maido.m8client
 
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.hardware.usb.UsbDeviceConnection
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.RelativeLayout
+import androidx.core.view.get
 import org.libsdl.app.SDLActivity
+import org.libsdl.app.SDLSurface
 
 
 class M8SDLActivity : SDLActivity() {
@@ -38,9 +40,9 @@ class M8SDLActivity : SDLActivity() {
     }
 
     private var showButtons = true
+    private lateinit var sdlSurface: SDLSurface
 
     override fun onStart() {
-        hideButtonsOnPortrait(resources.configuration.orientation)
         val fileDescriptor = intent.getIntExtra(FILE_DESCRIPTOR, -1)
         val audioDeviceId = intent.getIntExtra(AUDIO_DEVICE, 0)
         val audioDriver = intent.getStringExtra(AUDIO_DRIVER)
@@ -48,13 +50,13 @@ class M8SDLActivity : SDLActivity() {
             Log.d(TAG, "Setting audio driver to $audioDriver")
             setAudioDriver(audioDriver)
         }
-        val showButtons = intent.getBooleanExtra(SHOW_BUTTONS, true)
-        this.showButtons = showButtons
+        showButtons = intent.getBooleanExtra(SHOW_BUTTONS, true)
         val buttons = findViewById<View>(R.id.buttons)
-        buttons.visibility = if (showButtons) View.VISIBLE else View.INVISIBLE
+        buttons.visibility = if (showButtons) View.VISIBLE else View.GONE
         Log.d(TAG, "Setting file descriptor to $fileDescriptor and audio device to $audioDeviceId")
         connect(fileDescriptor, audioDeviceId)
         Thread {
+            Log.d(TAG, "Starting USB Loop thread")
             while (true) {
                 loop()
             }
@@ -66,27 +68,54 @@ class M8SDLActivity : SDLActivity() {
         val mainLayout = FrameLayout(this)
         mainLayout.addView(view)
         layoutInflater.inflate(R.layout.m8layout, mainLayout, true)
+        sdlSurface = (view as ViewGroup)[0] as SDLSurface
         super.setContentView(mainLayout)
         setButtonListeners()
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        hideButtonsOnPortrait(newConfig.orientation)
-    }
-
-    private fun hideButtonsOnPortrait(currentOrientation: Int) {
-        if (currentOrientation == Configuration.ORIENTATION_PORTRAIT) {
-            val buttons = findViewById<View>(R.id.buttons)
-            buttons.visibility = View.INVISIBLE
-        }
-        if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-            if (showButtons) {
-                val buttons = findViewById<View>(R.id.buttons)
-                buttons.visibility = View.VISIBLE
+    override fun onSDLTouch(
+        touchDevId: Int,
+        pointerFingerId: Int,
+        action: Int,
+        x: Float,
+        y: Float,
+        p: Float
+    ) {
+        if (!showButtons) {
+            // M8 SDL screen is 640x480
+            val ratio = sdlSurface.height / 480.0
+            val marginWidth = ((sdlSurface.width - (640.0 * ratio)) / 2.0) / sdlSurface.width
+            val isOnLeftMargin = x < marginWidth
+            val isDown = isOnLeftMargin && y > 2.0 / 3.0
+            val isUp = isOnLeftMargin && y < 1.0 / 3.0
+            val isLeft = isOnLeftMargin && !isDown && !isUp && x < marginWidth / 2.0
+            val isRight = isOnLeftMargin && !isDown && !isUp && !isLeft
+            val isOnRightMargin = x > (1.0 - marginWidth)
+            val isShift = isOnRightMargin && y > 0.5 && x < (1.0 - marginWidth / 2.0)
+            val isPlay = isOnRightMargin && y > 0.5 && !isShift
+            val isOption = isOnRightMargin && y <= 0.5 && x < (1.0 - marginWidth / 2.0)
+            val isEdit = isOnRightMargin && y <= 0.5 && !isOption
+            Log.d(TAG, "Action $action pointer $pointerFingerId dev $touchDevId")
+            if (isDown) {
+                M8TouchListener.handleTouch(M8Key.DOWN, action)
+            } else if (isUp) {
+                M8TouchListener.handleTouch(M8Key.UP, action)
+            } else if (isLeft) {
+                M8TouchListener.handleTouch(M8Key.LEFT, action)
+            } else if (isRight) {
+                M8TouchListener.handleTouch(M8Key.RIGHT, action)
+            } else if (isShift) {
+                M8TouchListener.handleTouch(M8Key.SHIFT, action)
+            } else if (isPlay) {
+                M8TouchListener.handleTouch(M8Key.PLAY, action)
+            } else if (isOption) {
+                M8TouchListener.handleTouch(M8Key.OPTION, action)
+            } else if (isEdit) {
+                M8TouchListener.handleTouch(M8Key.EDIT, action)
             }
         }
     }
+
 
     private fun setButtonListeners() {
         val up = findViewById<View>(R.id.up)
