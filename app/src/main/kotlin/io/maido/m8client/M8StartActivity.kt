@@ -6,11 +6,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.getSystemService
 import androidx.preference.PreferenceManager
 import io.maido.m8client.M8SDLActivity.Companion.startM8SDLActivity
 import io.maido.m8client.M8Util.copyGameControllerDB
@@ -25,13 +29,14 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
     private var showButtons = true
     private var audioDevice = 0
     private var audioDriver: String? = null
+    var connection: UsbDeviceConnection? = null
 
     private val usbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action
             if (ACTION_USB_PERMISSION == action) {
                 synchronized(this) {
-                    val device = intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)
+                    val device = getExtraDevice(intent)
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         val usbManager = getSystemService(USB_SERVICE) as UsbManager
                         if (device != null && isM8(device)) {
@@ -45,7 +50,17 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
                 }
             } else if (UsbManager.ACTION_USB_DEVICE_DETACHED == action) {
                 Log.d(TAG, "Device was detached!")
+                connection?.close()
             }
+        }
+    }
+
+    @Suppress("Deprecation")
+    private fun getExtraDevice(intent: Intent): UsbDevice? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
+        } else {
+            intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
         }
     }
 
@@ -62,13 +77,15 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
         unregisterReceiver(usbReceiver)
+        connection = null
         super.onDestroy()
     }
 
     private fun start() {
-        readPreferenceValues();
+        readPreferenceValues()
         Log.i(TAG, "Searching for an M8 device")
-        val usbManager = getSystemService(USB_SERVICE) as UsbManager
+        val usbManager =
+            getSystemService<UsbManager>() ?: throw RuntimeException("Service not found!")
         val deviceList = usbManager.deviceList
         for (device in deviceList.values) {
             if (isM8(device)) {
@@ -110,15 +127,15 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
     }
 
     private fun connectToM8(usbManager: UsbManager, usbDevice: UsbDevice) {
-        val connection = usbManager.openDevice(usbDevice)
+        connection = usbManager.openDevice(usbDevice)
         if (connection != null) {
             Log.d(
                 TAG,
-                "Setting device with id: " + usbDevice.deviceId + " and file descriptor: " + connection.fileDescriptor
+                "Setting device with id: " + usbDevice.deviceId + " and file descriptor: " + connection!!.fileDescriptor
             )
             startM8SDLActivity(
                 this,
-                connection,
+                connection!!,
                 audioDevice,
                 showButtons,
                 audioDriver

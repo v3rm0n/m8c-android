@@ -26,7 +26,7 @@ static void cb_xfr(struct libusb_transfer *xfr) {
         struct libusb_iso_packet_descriptor *pack = &xfr->iso_packet_desc[i];
 
         if (pack->status != LIBUSB_TRANSFER_COMPLETED) {
-            SDL_Log("Error (status %d: %s) :", pack->status,
+            SDL_Log("XFR callback error (status %d: %s)", pack->status,
                     libusb_error_name(pack->status));
             /* This doesn't happen, so bail out if it does. */
             return;
@@ -34,7 +34,9 @@ static void cb_xfr(struct libusb_transfer *xfr) {
 
         const uint8_t *data = libusb_get_iso_packet_buffer_simple(xfr, i);
 
-        SDL_QueueAudio(audio_device_id, data, pack->actual_length);
+        if (audio_device_id != 0) {
+            SDL_QueueAudio(audio_device_id, data, pack->actual_length);
+        }
 
         len += pack->length;
     }
@@ -47,9 +49,10 @@ static void cb_xfr(struct libusb_transfer *xfr) {
     }
 }
 
+static struct libusb_transfer *xfr[NUM_TRANSFERS];
+
 static int benchmark_in(libusb_device_handle *devh, uint8_t ep) {
     static uint8_t buf[PACKET_SIZE * NUM_PACKETS];
-    static struct libusb_transfer *xfr[NUM_TRANSFERS];
     int num_iso_pack = NUM_PACKETS;
     int i;
 
@@ -119,15 +122,6 @@ int audio_setup(libusb_device_handle *devh) {
         return rc;
     }
 
-
-// Good to go
-    do_exit = 0;
-    SDL_Log("Starting capture");
-    if ((rc = benchmark_in(devh, EP_ISO_IN)) < 0) {
-        SDL_Log("Capture failed to start: %d", rc);
-        return rc;
-    }
-
     if (!SDL_WasInit(SDL_INIT_AUDIO)) {
         if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
             SDL_Log("Init audio failed %s", SDL_GetError());
@@ -161,6 +155,14 @@ int audio_setup(libusb_device_handle *devh) {
 
     SDL_PauseAudioDevice(audio_device_id, 0);
 
+    // Good to go
+    do_exit = 0;
+    SDL_Log("Starting capture");
+    if ((rc = benchmark_in(devh, EP_ISO_IN)) < 0) {
+        SDL_Log("Capture failed to start: %d", rc);
+        return rc;
+    }
+
     SDL_Log("Successful init");
     return 1;
 }
@@ -172,6 +174,8 @@ int audio_destroy(libusb_device_handle *devh) {
 
     do_exit = 1;
 
+    SDL_Log("Freeing interface %d", IFACE_NUM);
+
     rc = libusb_release_interface(devh, IFACE_NUM);
     if (rc < 0) {
         SDL_Log("Error releasing interface: %s\n", libusb_error_name(rc));
@@ -179,7 +183,10 @@ int audio_destroy(libusb_device_handle *devh) {
     }
 
     if (audio_device_id != 0) {
-        SDL_CloseAudioDevice(audio_device_id);
+        SDL_Log("Closing audio device %d", audio_device_id);
+        int device = audio_device_id;
+        audio_device_id = 0;
+        SDL_CloseAudioDevice(device);
     }
 
     SDL_Log("Audio closed");
@@ -190,6 +197,7 @@ void audio_loop() {
     while (!do_exit) {
         int rc = libusb_handle_events(NULL);
         if (rc != LIBUSB_SUCCESS) {
+            SDL_Log("Audio loop error: %s\n", libusb_error_name(rc));
             break;
         }
     }

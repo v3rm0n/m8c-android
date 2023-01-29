@@ -37,9 +37,11 @@ class M8SDLActivity : SDLActivity() {
             sdlActivity.putExtra(SHOW_BUTTONS, showButtons)
             context.startActivity(sdlActivity)
         }
+
     }
 
     private var showButtons = true
+    private var running = true
     private lateinit var sdlSurface: SDLSurface
 
     override fun onStart() {
@@ -50,6 +52,7 @@ class M8SDLActivity : SDLActivity() {
             Log.d(TAG, "Setting audio driver to $audioDriver")
             setAudioDriver(audioDriver)
         }
+        running = true
         showButtons = intent.getBooleanExtra(SHOW_BUTTONS, true)
         val buttons = findViewById<View>(R.id.buttons)
         buttons.visibility = if (showButtons) View.VISIBLE else View.GONE
@@ -57,11 +60,17 @@ class M8SDLActivity : SDLActivity() {
         connect(fileDescriptor, audioDeviceId)
         Thread {
             Log.d(TAG, "Starting USB Loop thread")
-            while (true) {
+            while (running) {
                 loop()
             }
+            Log.d(TAG, "USB Loop thread ended")
         }.start()
         super.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        running = false
     }
 
     override fun setContentView(view: View) {
@@ -73,6 +82,7 @@ class M8SDLActivity : SDLActivity() {
         setButtonListeners()
     }
 
+    // Hacky way of intercepting touch events on the SDLSurface so we can use margins as invisible buttons
     override fun onSDLTouch(
         touchDevId: Int,
         pointerFingerId: Int,
@@ -95,7 +105,6 @@ class M8SDLActivity : SDLActivity() {
             val isPlay = isOnRightMargin && y > 0.5 && !isShift
             val isOption = isOnRightMargin && y <= 0.5 && x < (1.0 - marginWidth / 2.0)
             val isEdit = isOnRightMargin && y <= 0.5 && !isOption
-            Log.d(TAG, "Action $action pointer $pointerFingerId dev $touchDevId")
             if (isDown) {
                 M8TouchListener.handleTouch(M8Key.DOWN, action)
             } else if (isUp) {
