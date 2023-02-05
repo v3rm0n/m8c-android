@@ -2,7 +2,10 @@ package io.maido.m8client
 
 import android.content.Context
 import android.content.Intent
+import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
+import android.hardware.usb.UsbManager
+import android.os.Build
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -11,6 +14,7 @@ import android.widget.FrameLayout
 import androidx.core.view.get
 import org.libsdl.app.SDLActivity
 import org.libsdl.app.SDLSurface
+import kotlin.concurrent.thread
 
 
 class M8SDLActivity : SDLActivity() {
@@ -18,20 +22,20 @@ class M8SDLActivity : SDLActivity() {
     companion object {
         private const val TAG = "M8SDLActivity"
 
-        private val FILE_DESCRIPTOR = M8SDLActivity::class.simpleName + ".FILE_DESCRIPTOR"
+        private val USB_DEVICE = M8SDLActivity::class.simpleName + ".USB_DEVICE"
         private val AUDIO_DEVICE = M8SDLActivity::class.simpleName + ".AUDIO_DEVICE"
         private val SHOW_BUTTONS = M8SDLActivity::class.simpleName + ".SHOW_BUTTONS"
         private val AUDIO_DRIVER = M8SDLActivity::class.simpleName + ".AUDIO_DRIVER"
 
         fun startM8SDLActivity(
             context: Context,
-            connection: UsbDeviceConnection,
+            usbDevice: UsbDevice,
             audioDeviceId: Int,
             showButtons: Boolean,
             audioDriver: String?
         ) {
             val sdlActivity = Intent(context, M8SDLActivity::class.java)
-            sdlActivity.putExtra(FILE_DESCRIPTOR, connection.fileDescriptor)
+            sdlActivity.putExtra(USB_DEVICE, usbDevice)
             sdlActivity.putExtra(AUDIO_DEVICE, audioDeviceId)
             sdlActivity.putExtra(AUDIO_DRIVER, audioDriver)
             sdlActivity.putExtra(SHOW_BUTTONS, showButtons)
@@ -43,10 +47,18 @@ class M8SDLActivity : SDLActivity() {
     private var showButtons = true
     private var running = true
     private lateinit var sdlSurface: SDLSurface
+    private var usbConnection: UsbDeviceConnection? = null
+
+    @Suppress("Deprecation")
+    private fun getUsbDevice(): UsbDevice {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(USB_DEVICE, UsbDevice::class.java)
+        } else {
+            intent.getParcelableExtra(USB_DEVICE)
+        } ?: throw IllegalStateException("No device!")
+    }
 
     override fun onStart() {
-        val fileDescriptor = intent.getIntExtra(FILE_DESCRIPTOR, -1)
-        val audioDeviceId = intent.getIntExtra(AUDIO_DEVICE, 0)
         val audioDriver = intent.getStringExtra(AUDIO_DRIVER)
         if (audioDriver != null) {
             Log.d(TAG, "Setting audio driver to $audioDriver")
@@ -56,20 +68,33 @@ class M8SDLActivity : SDLActivity() {
         showButtons = intent.getBooleanExtra(SHOW_BUTTONS, true)
         val buttons = findViewById<View>(R.id.buttons)
         buttons.visibility = if (showButtons) View.VISIBLE else View.GONE
-        Log.d(TAG, "Setting file descriptor to $fileDescriptor and audio device to $audioDeviceId")
-        connect(fileDescriptor, audioDeviceId)
-        Thread {
+        openUsbConnection()
+        thread {
             Log.d(TAG, "Starting USB Loop thread")
             while (running) {
                 loop()
             }
             Log.d(TAG, "USB Loop thread ended")
-        }.start()
+        }
         super.onStart()
+    }
+
+    private fun openUsbConnection() {
+        val audioDeviceId = intent.getIntExtra(AUDIO_DEVICE, 0)
+        val usbDevice = getUsbDevice()
+        val usbManager = getSystemService(UsbManager::class.java)!!
+        usbConnection = usbManager.openDevice(usbDevice)?.also {
+            Log.d(
+                TAG,
+                "Setting file descriptor to ${it.fileDescriptor} and audio device to $audioDeviceId"
+            )
+            connect(it.fileDescriptor, audioDeviceId)
+        }
     }
 
     override fun onStop() {
         super.onStop()
+        usbConnection?.close()
         running = false
     }
 

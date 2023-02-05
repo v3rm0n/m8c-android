@@ -29,7 +29,6 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
     private var showButtons = true
     private var audioDevice = 0
     private var audioDriver: String? = null
-    var connection: UsbDeviceConnection? = null
 
     private val usbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -38,9 +37,8 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
                 synchronized(this) {
                     val device = getExtraDevice(intent)
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                        val usbManager = getSystemService(USB_SERVICE) as UsbManager
                         if (device != null && isM8(device)) {
-                            connectToM8(usbManager, device)
+                            connectToM8(device)
                         } else {
                             Log.d(TAG, "Device was not M8")
                         }
@@ -50,7 +48,6 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
                 }
             } else if (UsbManager.ACTION_USB_DEVICE_DETACHED == action) {
                 Log.d(TAG, "Device was detached!")
-                connection?.close()
             }
         }
     }
@@ -75,10 +72,9 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
     }
 
     override fun onDestroy() {
+        super.onDestroy()
         Log.d(TAG, "onDestroy")
         unregisterReceiver(usbReceiver)
-        connection = null
-        super.onDestroy()
     }
 
     private fun start() {
@@ -105,7 +101,7 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
     private fun connectToM8WithPermission(usbManager: UsbManager, usbDevice: UsbDevice) {
         if (usbManager.hasPermission(usbDevice)) {
             Log.i(TAG, "Permission granted!")
-            connectToM8(usbManager, usbDevice)
+            connectToM8(usbDevice)
         } else {
             Log.i(TAG, "Requesting USB device permission")
             requestM8Permission(usbManager, usbDevice)
@@ -126,22 +122,13 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
         usbManager.requestPermission(usbDevice, permissionIntent)
     }
 
-    private fun connectToM8(usbManager: UsbManager, usbDevice: UsbDevice) {
-        connection = usbManager.openDevice(usbDevice)
-        if (connection != null) {
-            Log.d(
-                TAG,
-                "Setting device with id: " + usbDevice.deviceId + " and file descriptor: " + connection!!.fileDescriptor
-            )
-            startM8SDLActivity(
-                this,
-                connection!!,
-                audioDevice,
-                showButtons,
-                audioDriver
-            )
-        }
+    private fun connectToM8(usbDevice: UsbDevice) {
+        startM8SDLActivity(
+            this,
+            usbDevice,
+            audioDevice,
+            showButtons,
+            audioDriver
+        )
     }
-
-
 }

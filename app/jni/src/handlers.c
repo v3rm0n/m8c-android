@@ -3,6 +3,8 @@
 #include "audio.h"
 #include "SDL.h"
 
+int device_active = 0;
+
 JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8SDLActivity_loop(JNIEnv *env, jobject thiz) {
     audio_loop();
@@ -11,6 +13,8 @@ Java_io_maido_m8client_M8SDLActivity_loop(JNIEnv *env, jobject thiz) {
 JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8SDLActivity_connect(JNIEnv *env, jobject thiz,
                                              jint fd, jint audiodevice) {
+    device_active = 1;
+    SDL_Log("Connecting to the device");
     set_audio_device(audiodevice);
     set_usb_init_callback(audio_setup);
     set_usb_destroy_callback(audio_destroy);
@@ -20,7 +24,10 @@ Java_io_maido_m8client_M8SDLActivity_connect(JNIEnv *env, jobject thiz,
 JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8TouchListener_00024Companion_sendClickEvent(JNIEnv *env, jobject thiz,
                                                                      jchar event) {
-    send_msg_controller(event);
+    if (device_active) {
+        SDL_Log("Sending message to M8");
+        send_msg_controller(event);
+    }
 }
 
 JNIEXPORT void JNICALL
@@ -34,11 +41,15 @@ Java_io_maido_m8client_M8SDLActivity_setAudioDriver(JNIEnv *env, jobject thiz,
 
 JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8TouchListener_00024Companion_resetScreen(JNIEnv *env, jobject thiz) {
-    reset_display();
+    if (device_active) {
+        enable_and_reset_display();
+    }
 }
 
 JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8TouchListener_00024Companion_exit(JNIEnv *env, jobject thiz) {
+    device_active = 0;
+    SDL_Log("Sending Alt+F4 to M8");
     SDL_Event sdlevent = {};
     sdlevent.type = SDL_KEYDOWN;
     sdlevent.key.keysym.sym = SDLK_F4;

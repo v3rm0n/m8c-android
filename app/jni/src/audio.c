@@ -149,7 +149,6 @@ int audio_setup(libusb_device_handle *devh) {
         int n = (int) (log10(aaudio_device_id) + 1);
         char audio_device_name[n];
         SDL_itoa(aaudio_device_id, audio_device_name, 10);
-
         audio_device_id = SDL_OpenAudioDevice(audio_device_name, 0, &audio_spec, &_obtained, 0);
     }
 
