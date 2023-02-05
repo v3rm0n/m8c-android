@@ -4,15 +4,9 @@ plugins {
     id 'io.sentry.android.gradle'
 }
 
-sentry {
-    uploadNativeSymbols.set(true)
-    includeNativeSources.set(true)
-}
-
 android {
     namespace 'io.maido.m8client'
     compileSdk 33
-    ndkVersion '25.1.8937393'
 
     defaultConfig {
         applicationId "io.maido.m8client"
@@ -20,13 +14,6 @@ android {
         targetSdk 33
         versionCode 1
         versionName "1.0"
-
-        externalNativeBuild {
-            ndkBuild {
-                arguments "APP_PLATFORM=android-26", "USE_PC_NAME=1"
-                abiFilters 'armeabi-v7a', 'arm64-v8a'
-            }
-        }
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,21 +23,6 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-    }
-    applicationVariants.all { variant ->
-        tasks["merge${variant.name.capitalize()}Assets"]
-                .dependsOn("externalNativeBuild${variant.name.capitalize()}")
-    }
-    if (!project.hasProperty('EXCLUDE_NATIVE_LIBS')) {
-        sourceSets.main {
-            jniLibs.srcDir 'libs'
-        }
-        externalNativeBuild {
-            ndkBuild {
-                path 'jni/Android.mk'
-            }
-        }
-
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_9
@@ -70,6 +42,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.8.0'
     implementation 'androidx.preference:preference:1.2.0'
     implementation "androidx.fragment:fragment-ktx:1.5.5"
+    implementation "com.github.mik3y:usb-serial-for-android:3.4.6"
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

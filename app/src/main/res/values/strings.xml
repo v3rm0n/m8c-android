@@ -9,24 +9,9 @@
     <string name="play">Play</string>
     <string name="shift">Shift</string>
     <string name="connect_your_m8_device">Connect your M8 device!</string>
-    <string name="stop_logging">Submit logs</string>
-    <string name="uri_content_cache">content://io.maido.m8c.provider.cache/%1$s</string>
-    <string name="uri_authority_cache">io.maido.m8c.provider.cache</string>
     <string name="start">Start</string>
-    <string name="show_onscreen_buttons">Show onscreen buttons</string>
     <string name="choose_audio_device">Choose audio device</string>
-    <string name="choose_audio_driver">Choose audio driver</string>
-    <string-array name="audio_drivers">
-        <item>AAudio</item>
-        <item>android</item>
-        <item>openslES</item>
-    </string-array>
     <string name="audio_header">Audio</string>
     <string name="other">Other</string>
-    <string name="audio_driver_pref">audio_driver</string>
     <string name="audio_device_pref">audio_device</string>
-    <string name="buttons_pref">buttons</string>
-    <string name="ui">User Interface</string>
-    <string name="lock_orientation_pref">lock_orientation</string>
-    <string name="lock_landscape">Lock to landscape orientation</string>
 </resources>

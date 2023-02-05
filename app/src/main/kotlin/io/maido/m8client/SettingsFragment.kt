@@ -3,8 +3,6 @@ package io.maido.m8client
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Bundle
-import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat

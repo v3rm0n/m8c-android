@@ -8,23 +8,6 @@
             app:title="@string/choose_audio_device"
             app:useSimpleSummaryProvider="true" />
 
-        <ListPreference
-            app:defaultValue="AAudio"
-            app:entries="@array/audio_drivers"
-            app:entryValues="@array/audio_drivers"
-            app:key="@string/audio_driver_pref"
-            app:title="@string/choose_audio_driver"
-            app:useSimpleSummaryProvider="true" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory app:title="@string/ui">
-
-        <SwitchPreferenceCompat
-            app:defaultValue="true"
-            app:key="@string/buttons_pref"
-            app:title="@string/show_onscreen_buttons" />
-
     </PreferenceCategory>
 
 </PreferenceScreen>

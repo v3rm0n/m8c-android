@@ -1,4 +1,4 @@
-package io.maido.m8client
+package io.maido.m8client.m8
 
 enum class M8Key(private val code: Int) {
     EDIT(1),
