@@ -56,3 +56,15 @@ Java_io_maido_m8client_M8TouchListener_00024Companion_exit(JNIEnv *env, jobject 
     sdlevent.key.keysym.mod = KMOD_ALT;
     SDL_PushEvent(&sdlevent);
 }
+
+JNIEXPORT void JNICALL
+Java_io_maido_m8client_M8SDLActivity_lockOrientation(JNIEnv *env, jobject thiz, jboolean lock) {
+    if (lock) {
+        SDL_Log("Lock to landscape");
+        SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
+    } else {
+        SDL_Log("Don't lock orientation");
+        SDL_SetHint(SDL_HINT_ORIENTATIONS,
+                    "LandscapeLeft LandscapeRight Portrait PortraitUpsideDown");
+    }
+}

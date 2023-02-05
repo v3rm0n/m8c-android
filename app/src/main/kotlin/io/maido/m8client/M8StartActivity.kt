@@ -6,27 +6,26 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
-import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
+import android.hardware.usb.UsbManager.ACTION_USB_DEVICE_DETACHED
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.getSystemService
 import androidx.preference.PreferenceManager
 import io.maido.m8client.M8SDLActivity.Companion.startM8SDLActivity
 import io.maido.m8client.M8Util.copyGameControllerDB
 import io.maido.m8client.M8Util.isM8
 
-class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
+class M8StartActivity : AppCompatActivity(R.layout.settings) {
     companion object {
         private const val ACTION_USB_PERMISSION = "io.maido.m8client.USB_PERMISSION"
         private const val TAG = "M8StartActivity"
     }
 
     private var showButtons = true
+    private var lockOrientation = false
     private var audioDevice = 0
     private var audioDriver: String? = null
 
@@ -46,7 +45,7 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
                         Log.d(TAG, "Permission denied for device $device")
                     }
                 }
-            } else if (UsbManager.ACTION_USB_DEVICE_DETACHED == action) {
+            } else if (ACTION_USB_DEVICE_DETACHED == action) {
                 Log.d(TAG, "Device was detached!")
             }
         }
@@ -65,7 +64,7 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate")
-        registerReceiver(usbReceiver, IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED))
+        registerReceiver(usbReceiver, IntentFilter(ACTION_USB_DEVICE_DETACHED))
         copyGameControllerDB(this)
         val start = findViewById<Button>(R.id.startButton)
         start.setOnClickListener { start() }
@@ -80,8 +79,7 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
     private fun start() {
         readPreferenceValues()
         Log.i(TAG, "Searching for an M8 device")
-        val usbManager =
-            getSystemService<UsbManager>() ?: throw RuntimeException("Service not found!")
+        val usbManager = getSystemService(UsbManager::class.java)
         val deviceList = usbManager.deviceList
         for (device in deviceList.values) {
             if (isM8(device)) {
@@ -96,6 +94,7 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
         audioDevice = preferences.getString(getString(R.string.audio_device_pref), "0")!!.toInt()
         audioDriver = preferences.getString(getString(R.string.audio_driver_pref), "AAudio")
         showButtons = preferences.getBoolean(getString(R.string.buttons_pref), true)
+        lockOrientation = preferences.getBoolean(getString(R.string.lock_orientation_pref), false)
     }
 
     private fun connectToM8WithPermission(usbManager: UsbManager, usbDevice: UsbDevice) {
@@ -128,7 +127,8 @@ class M8StartActivity : AppCompatActivity(R.layout.nodevice) {
             usbDevice,
             audioDevice,
             showButtons,
-            audioDriver
+            audioDriver,
+            lockOrientation
         )
     }
 }

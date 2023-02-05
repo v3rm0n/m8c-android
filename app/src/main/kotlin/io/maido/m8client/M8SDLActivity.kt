@@ -2,12 +2,13 @@ package io.maido.m8client
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
 import android.os.Build
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -26,19 +27,22 @@ class M8SDLActivity : SDLActivity() {
         private val AUDIO_DEVICE = M8SDLActivity::class.simpleName + ".AUDIO_DEVICE"
         private val SHOW_BUTTONS = M8SDLActivity::class.simpleName + ".SHOW_BUTTONS"
         private val AUDIO_DRIVER = M8SDLActivity::class.simpleName + ".AUDIO_DRIVER"
+        private val LOCK_ORIENTATION = M8SDLActivity::class.simpleName + ".LOCK_ORIENTATION"
 
         fun startM8SDLActivity(
             context: Context,
             usbDevice: UsbDevice,
             audioDeviceId: Int,
             showButtons: Boolean,
-            audioDriver: String?
+            audioDriver: String?,
+            lockOrientation: Boolean,
         ) {
             val sdlActivity = Intent(context, M8SDLActivity::class.java)
             sdlActivity.putExtra(USB_DEVICE, usbDevice)
             sdlActivity.putExtra(AUDIO_DEVICE, audioDeviceId)
             sdlActivity.putExtra(AUDIO_DRIVER, audioDriver)
             sdlActivity.putExtra(SHOW_BUTTONS, showButtons)
+            sdlActivity.putExtra(LOCK_ORIENTATION, lockOrientation)
             context.startActivity(sdlActivity)
         }
 
@@ -64,6 +68,8 @@ class M8SDLActivity : SDLActivity() {
             Log.d(TAG, "Setting audio driver to $audioDriver")
             setAudioDriver(audioDriver)
         }
+        val lock = intent.getBooleanExtra(LOCK_ORIENTATION, false)
+        lockOrientation(lock)
         running = true
         showButtons = intent.getBooleanExtra(SHOW_BUTTONS, true)
         val buttons = findViewById<View>(R.id.buttons)
@@ -101,7 +107,7 @@ class M8SDLActivity : SDLActivity() {
     override fun setContentView(view: View) {
         val mainLayout = FrameLayout(this)
         mainLayout.addView(view)
-        layoutInflater.inflate(R.layout.m8layout, mainLayout, true)
+        layoutInflater.inflate(R.layout.m8, mainLayout, true)
         sdlSurface = (view as ViewGroup)[0] as SDLSurface
         super.setContentView(mainLayout)
         setButtonListeners()
@@ -175,5 +181,7 @@ class M8SDLActivity : SDLActivity() {
 
     private external fun connect(fileDescriptor: Int, audioDeviceId: Int)
     private external fun setAudioDriver(audioDriver: String?)
+
+    private external fun lockOrientation(lock: Boolean)
     private external fun loop()
 }

@@ -25,6 +25,11 @@
             app:key="@string/buttons_pref"
             app:title="@string/show_onscreen_buttons" />
 
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:key="@string/lock_orientation_pref"
+            app:title="@string/lock_landscape" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
