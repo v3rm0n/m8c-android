@@ -13,8 +13,8 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v3
       with:
-        java-version: 11.0.16+8
-        distribution: liberica
+        java-version: 11
+        distribution: temurin
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
@@ -23,10 +23,14 @@ jobs:
       run: git submodule update --init
 
     - name: Build M8Client
-      run: ./gradlew --no-daemon build
+      uses: gradle/gradle-build-action@v2
+      with:
+        arguments: --build-cache build
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
     - name: Upload Debug App
       uses: actions/upload-artifact@v3
       with:
-        name: app-debug.apk
+        name: m8c.apk
         path: app/build/outputs/apk/debug/app-debug.apk
