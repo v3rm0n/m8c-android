@@ -41,6 +41,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
