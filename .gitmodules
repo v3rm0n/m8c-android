@@ -7,5 +7,4 @@
 	branch = SDL2
 [submodule "app/jni/m8c"]
 	path = app/jni/m8c
-	url = https://github.com/v3rm0n/m8c.git
-	branch = serial-refactor
+	url = https://github.com/laamaa/m8c.git
