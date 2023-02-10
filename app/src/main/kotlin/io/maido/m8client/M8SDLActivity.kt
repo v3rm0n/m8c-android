@@ -50,7 +50,6 @@ class M8SDLActivity : SDLActivity() {
 
     private var showButtons = true
     private var running = true
-    private lateinit var sdlSurface: SDLSurface
     private var usbConnection: UsbDeviceConnection? = null
 
     @Suppress("Deprecation")
@@ -106,9 +105,9 @@ class M8SDLActivity : SDLActivity() {
 
     override fun setContentView(view: View) {
         val mainLayout = FrameLayout(this)
-        mainLayout.addView(view)
         layoutInflater.inflate(R.layout.m8, mainLayout, true)
-        sdlSurface = (view as ViewGroup)[0] as SDLSurface
+        val screen = mainLayout.findViewById<ViewGroup>(R.id.screen)
+        screen.addView(view)
         super.setContentView(mainLayout)
         setButtonListeners()
     }
@@ -124,8 +123,8 @@ class M8SDLActivity : SDLActivity() {
     ) {
         if (!showButtons) {
             // M8 SDL screen is 640x480
-            val ratio = sdlSurface.height / 480.0
-            val marginWidth = ((sdlSurface.width - (640.0 * ratio)) / 2.0) / sdlSurface.width
+            val ratio = mSurface.height / 480.0
+            val marginWidth = ((mSurface.width - (640.0 * ratio)) / 2.0) / mSurface.width
             val isOnLeftMargin = x < marginWidth
             val isDown = isOnLeftMargin && y > 2.0 / 3.0
             val isUp = isOnLeftMargin && y < 1.0 / 3.0

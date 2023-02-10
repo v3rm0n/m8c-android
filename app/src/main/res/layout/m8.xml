@@ -1,112 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/buttons"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="bottom"
-    android:orientation="horizontal"
-    android:paddingVertical="50dp"
-    android:paddingHorizontal="10dp">
+    android:background="@color/black"
+    android:layout_height="match_parent">
 
-    <ImageButton
-        android:id="@+id/left"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@android:color/black"
-        android:contentDescription="@string/left"
-        android:rotation="-90"
-        android:src="@drawable/chevron" />
+    <FrameLayout
+        android:id="@+id/screen"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="320:240"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0" />
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:id="@+id/buttons"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:orientation="vertical">
+        android:layout_gravity="bottom"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="50dp"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageButton
-            android:id="@+id/up"
+            android:id="@+id/left"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:background="@android:color/black"
-            android:contentDescription="@string/up"
-            android:paddingBottom="50dp"
+            android:contentDescription="@string/left"
+            android:rotation="-90"
             android:src="@drawable/chevron" />
 
-        <ImageButton
-            android:id="@+id/down"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/up"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/black"
+                android:contentDescription="@string/up"
+                android:paddingBottom="50dp"
+                android:src="@drawable/chevron" />
+
+            <ImageButton
+                android:id="@+id/down"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/black"
+                android:contentDescription="@string/down"
+                android:rotation="180"
+                android:src="@drawable/chevron" />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:background="@android:color/black"
-            android:contentDescription="@string/down"
-            android:rotation="180"
+            android:contentDescription="@string/right"
+            android:rotation="90"
             android:src="@drawable/chevron" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true">
+
+                <ImageButton
+                    android:id="@+id/option"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/black"
+                    android:contentDescription="@string/option"
+                    android:src="@drawable/clone" />
+
+                <ImageButton
+                    android:id="@+id/edit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/black"
+                    android:contentDescription="@string/edit"
+                    android:paddingHorizontal="20dp"
+                    android:src="@drawable/asterisk" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true">
+
+                <ImageButton
+                    android:id="@+id/shift"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/black"
+                    android:contentDescription="@string/shift"
+                    android:src="@drawable/caret" />
+
+                <ImageButton
+                    android:id="@+id/play"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/black"
+                    android:contentDescription="@string/play"
+                    android:paddingHorizontal="20dp"
+                    android:src="@drawable/play" />
+            </LinearLayout>
+
+
+        </RelativeLayout>
 
     </LinearLayout>
 
-    <ImageButton
-        android:id="@+id/right"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@android:color/black"
-        android:contentDescription="@string/right"
-        android:rotation="90"
-        android:src="@drawable/chevron" />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true">
-
-            <ImageButton
-                android:id="@+id/option"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/black"
-                android:contentDescription="@string/option"
-                android:src="@drawable/clone" />
-
-            <ImageButton
-                android:id="@+id/edit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/black"
-                android:paddingHorizontal="20dp"
-                android:contentDescription="@string/edit"
-                android:src="@drawable/asterisk" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true">
-
-            <ImageButton
-                android:id="@+id/shift"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/black"
-                android:contentDescription="@string/shift"
-                android:src="@drawable/caret" />
-
-            <ImageButton
-                android:id="@+id/play"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/black"
-                android:paddingHorizontal="20dp"
-                android:contentDescription="@string/play"
-                android:src="@drawable/play" />
-        </LinearLayout>
-
-
-    </RelativeLayout>
-
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

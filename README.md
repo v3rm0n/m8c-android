@@ -17,6 +17,15 @@ Check the [releases](https://github.com/v3rm0n/m8c-android/releases) page to ins
 - [x] Touch screen input
 - [x] Audio playback
 
+## Buttons
+
+The buttons have two special functions added to them:
+
+- Touch left and right at the same time: reset screen (useful if you have artefacts on the screen)
+- Touch up and down at the same time: screen view is closed and you go back to settings (not very useful, disconnecting and closing the app is recommended)
+
+**NB!** When onscreen buttons are hidden then in the landscape mode you can still use the margins on either side of screen as buttons. Layout is the same. Try it out and you'll understand.
+
 ## Building
 
 ### Prerequisites
