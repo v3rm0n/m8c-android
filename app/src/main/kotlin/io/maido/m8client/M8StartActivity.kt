@@ -1,6 +1,7 @@
 package io.maido.m8client
 
-import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_IMMUTABLE
+import android.app.PendingIntent.getBroadcast
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -11,23 +12,28 @@ import android.hardware.usb.UsbManager.ACTION_USB_DEVICE_DETACHED
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import io.maido.m8client.M8SDLActivity.Companion.startM8SDLActivity
 import io.maido.m8client.M8Util.copyGameControllerDB
 import io.maido.m8client.M8Util.isM8
+import io.maido.m8client.settings.GamepadButtonSettings
 
-class M8StartActivity : AppCompatActivity(R.layout.settings) {
+
+class M8StartActivity : AppCompatActivity(R.layout.settings),
+    PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
     companion object {
         private const val ACTION_USB_PERMISSION = "io.maido.m8client.USB_PERMISSION"
         private const val TAG = "M8StartActivity"
     }
 
-    private var showButtons = true
-    private var lockOrientation = false
-    private var audioDevice = 0
-    private var audioDriver: String? = null
+    private lateinit var configuration: M8Configuration
 
     private val usbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -64,10 +70,31 @@ class M8StartActivity : AppCompatActivity(R.layout.settings) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate")
+        configuration = M8Configuration(this)
+        setSupportActionBar(findViewById(R.id.toolbar))
         registerReceiver(usbReceiver, IntentFilter(ACTION_USB_DEVICE_DETACHED))
         copyGameControllerDB(this)
         val start = findViewById<Button>(R.id.startButton)
         start.setOnClickListener { start() }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                val preferences = PreferenceManager.getDefaultSharedPreferences(this)
+                preferences.edit {
+                    clear()
+                }
+                recreate()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onDestroy() {
@@ -77,24 +104,14 @@ class M8StartActivity : AppCompatActivity(R.layout.settings) {
     }
 
     private fun start() {
-        readPreferenceValues()
         Log.i(TAG, "Searching for an M8 device")
         val usbManager = getSystemService(UsbManager::class.java)
-        val deviceList = usbManager.deviceList
-        for (device in deviceList.values) {
+        for (device in usbManager.deviceList.values) {
             if (isM8(device)) {
                 connectToM8WithPermission(usbManager, device)
                 break
             }
         }
-    }
-
-    private fun readPreferenceValues() {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        audioDevice = preferences.getString(getString(R.string.audio_device_pref), "0")!!.toInt()
-        audioDriver = preferences.getString(getString(R.string.audio_driver_pref), "AAudio")
-        showButtons = preferences.getBoolean(getString(R.string.buttons_pref), true)
-        lockOrientation = preferences.getBoolean(getString(R.string.lock_orientation_pref), false)
     }
 
     private fun connectToM8WithPermission(usbManager: UsbManager, usbDevice: UsbDevice) {
@@ -107,28 +124,29 @@ class M8StartActivity : AppCompatActivity(R.layout.settings) {
         }
     }
 
-    private fun requestM8Permission(
-        usbManager: UsbManager,
-        usbDevice: UsbDevice
-    ) {
-        val permissionIntent = PendingIntent.getBroadcast(
-            this, 0, Intent(
-                ACTION_USB_PERMISSION
-            ), PendingIntent.FLAG_IMMUTABLE
-        )
-        val filter = IntentFilter(ACTION_USB_PERMISSION)
-        registerReceiver(usbReceiver, filter)
+    private fun requestM8Permission(usbManager: UsbManager, usbDevice: UsbDevice) {
+        val intent = Intent(ACTION_USB_PERMISSION)
+        val permissionIntent = getBroadcast(this, 0, intent, FLAG_IMMUTABLE)
+        registerReceiver(usbReceiver, IntentFilter(ACTION_USB_PERMISSION))
         usbManager.requestPermission(usbDevice, permissionIntent)
     }
 
     private fun connectToM8(usbDevice: UsbDevice) {
-        startM8SDLActivity(
-            this,
-            usbDevice,
-            audioDevice,
-            showButtons,
-            audioDriver,
-            lockOrientation
+        configuration.copyConfiguration(GamepadButtonSettings.getGamepadPreferences(this))
+        startM8SDLActivity(this, usbDevice)
+    }
+
+    override fun onPreferenceStartFragment(
+        caller: PreferenceFragmentCompat, pref: Preference
+    ): Boolean {
+        // Instantiate the new Fragment
+        val fragment = supportFragmentManager.fragmentFactory.instantiate(
+            classLoader, pref.fragment!!
         )
+        fragment.arguments = pref.extras
+        // Replace the existing Fragment with the new Fragment
+        supportFragmentManager.beginTransaction().replace(R.id.settings_container, fragment)
+            .addToBackStack(null).commit()
+        return true
     }
 }

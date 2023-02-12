@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">M8C</string>
     <string name="up">Up</string>
     <string name="left">Left</string>
@@ -26,4 +26,31 @@
     <string name="ui">User Interface</string>
     <string name="lock_orientation_pref">lock_orientation</string>
     <string name="lock_landscape">Lock to landscape orientation</string>
+    <string name="gamepad_mappings">Gamepad mappings</string>
+    <string name="gamepad_mappings_summary">Use custom gamepad button mappings</string>
+    <string name="input">Input</string>
+    <string-array name="sdl_gamecontroller_buttons">
+        <item>A</item>
+        <item>B</item>
+        <item>X</item>
+        <item>Y</item>
+        <item>BACK</item>
+        <item>GUIDE</item>
+        <item>START</item>
+        <item>LEFTSTICK</item>
+        <item>RIGHTSTICK</item>
+        <item>LEFTSHOULDER</item>
+        <item>RIGHTSHOULDER</item>
+        <item>DPAD_UP</item>
+        <item>DPAD_DOWN</item>
+        <item>DPAD_LEFT</item>
+        <item>DPAD_RIGHT</item>
+        <item tools:ignore="Typos">MISC1</item>
+        <item tools:ignore="Typos">PADDLE1</item>
+        <item>PADDLE2</item>
+        <item>PADDLE3</item>
+        <item>PADDLE4</item>
+        <item>TOUCHPAD</item>
+        <item>MAX</item>
+    </string-array>
 </resources>

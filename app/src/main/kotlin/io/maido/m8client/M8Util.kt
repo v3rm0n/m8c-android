@@ -3,11 +3,9 @@ package io.maido.m8client
 import android.annotation.SuppressLint
 import android.content.Context
 import android.hardware.usb.UsbDevice
-import android.util.Log
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
-import java.io.OutputStream
 
 object M8Util {
 
@@ -17,20 +15,17 @@ object M8Util {
     fun isM8(usbDevice: UsbDevice) = usbDevice.productName == "M8"
 
     fun copyGameControllerDB(context: Context) {
-        Log.d("CONTEXT", context.filesDir.path)
-        copyFile(context, "config.ini", "$basePath/config.ini")
-        copyFile(
-            context,
-            "gamecontrollerdb.txt",
-            "$basePath/gamecontrollerdb.txt"
-        )
+        copyFile("gamecontrollerdb.txt", openFile(context, "gamecontrollerdb.txt"))
     }
 
-    private fun copyFile(context: Context, sourceFileName: String, destFileName: String) {
-        val assetManager = context.assets
-        val destFile = File(destFileName)
+    fun openFile(context: Context, fileName: String): InputStream {
+        return context.assets.open(fileName)
+    }
+
+    fun copyFile(fileName: String, content: InputStream) {
+        val destFile = File("$basePath/$fileName")
         destFile.parentFile?.mkdir()
-        assetManager.open(sourceFileName).use { input ->
+        content.use { input ->
             FileOutputStream(destFile).use { out ->
                 val buffer = ByteArray(1024)
                 var read = input.read(buffer)

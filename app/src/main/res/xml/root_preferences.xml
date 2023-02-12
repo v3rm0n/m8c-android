@@ -30,6 +30,14 @@
             app:key="@string/lock_orientation_pref"
             app:title="@string/lock_landscape" />
 
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/input">
+        <Preference
+            app:fragment="io.maido.m8client.settings.GamepadButtonSettings"
+            app:summary="@string/gamepad_mappings_summary"
+            app:title="@string/gamepad_mappings" />
     </PreferenceCategory>
 
 </PreferenceScreen>
