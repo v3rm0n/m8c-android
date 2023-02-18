@@ -2,6 +2,7 @@ package io.maido.m8client
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
@@ -10,7 +11,6 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import io.maido.m8client.settings.GeneralPreferences
 import io.maido.m8client.settings.GeneralSettings
 import org.libsdl.app.SDLActivity
 import kotlin.concurrent.thread
@@ -48,7 +48,6 @@ class M8SDLActivity : SDLActivity() {
         val generalPreferences = GeneralSettings.getGeneralPreferences(this)
         val audioDriver = generalPreferences.audioDriver
         if (audioDriver != null) {
-            Log.d(TAG, "Setting audio driver to $audioDriver")
             setAudioDriver(audioDriver)
         }
         lockOrientation(generalPreferences.lockOrientation)
@@ -83,6 +82,19 @@ class M8SDLActivity : SDLActivity() {
         super.onStop()
         usbConnection?.close()
         running = false
+    }
+
+    override fun onUnhandledMessage(command: Int, param: Any?): Boolean {
+        if (command == 0x8001 && param is Int) {
+            val r = param shr 16
+            val g = (param shr 8) and 0xFF
+            val b = param and 0xFF
+            Log.d(TAG, "Background color changed to $r $g $b")
+            val main = findViewById<ViewGroup>(R.id.main)
+            main.setBackgroundColor(Color.rgb(r, g, b))
+            return true
+        }
+        return super.onUnhandledMessage(command, param)
     }
 
     override fun setContentView(view: View) {

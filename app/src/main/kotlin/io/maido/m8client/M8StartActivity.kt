@@ -23,7 +23,7 @@ import androidx.preference.PreferenceManager
 import io.maido.m8client.M8SDLActivity.Companion.startM8SDLActivity
 import io.maido.m8client.M8Util.copyGameControllerDB
 import io.maido.m8client.M8Util.isM8
-import io.maido.m8client.settings.GamepadButtonSettings
+import io.maido.m8client.settings.GamepadSettings
 
 
 class M8StartActivity : AppCompatActivity(R.layout.settings),
@@ -132,7 +132,7 @@ class M8StartActivity : AppCompatActivity(R.layout.settings),
     }
 
     private fun connectToM8(usbDevice: UsbDevice) {
-        configuration.copyConfiguration(GamepadButtonSettings.getGamepadPreferences(this))
+        configuration.copyConfiguration(GamepadSettings.getGamepadPreferences(this))
         startM8SDLActivity(this, usbDevice)
     }
 
