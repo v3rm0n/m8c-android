@@ -2,6 +2,7 @@ package io.maido.m8client
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
@@ -13,6 +14,8 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import io.maido.m8client.M8Key.*
+import io.maido.m8client.M8TouchListener.Companion.resetModifiers
 import io.maido.m8client.settings.GeneralSettings
 import org.libsdl.app.SDLActivity
 import kotlin.concurrent.thread
@@ -33,7 +36,6 @@ class M8SDLActivity : SDLActivity() {
 
     }
 
-    private var showButtons = true
     private var running = true
     private var usbConnection: UsbDeviceConnection? = null
 
@@ -54,9 +56,6 @@ class M8SDLActivity : SDLActivity() {
         }
         lockOrientation(generalPreferences.lockOrientation)
         running = true
-        showButtons = generalPreferences.showButtons
-        val buttons = findViewById<View>(R.id.buttons)
-        buttons.visibility = if (showButtons) View.VISIBLE else View.GONE
         openUsbConnection(generalPreferences.audioDevice)
         thread {
             Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
@@ -109,72 +108,60 @@ class M8SDLActivity : SDLActivity() {
         return super.onUnhandledMessage(command, param)
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Log.d(TAG, "Orientation to portrait, show alternative buttons")
+            findViewById<View>(R.id.leftButtonsAlt)?.visibility = View.VISIBLE
+            findViewById<View>(R.id.rightButtonsAlt)?.visibility = View.VISIBLE
+        } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Log.d(TAG, "Orientation to portrait, hide alternative buttons")
+            findViewById<View>(R.id.leftButtonsAlt)?.visibility = View.GONE
+            findViewById<View>(R.id.rightButtonsAlt)?.visibility = View.GONE
+        }
+        super.onConfigurationChanged(newConfig)
+    }
+
     override fun setContentView(view: View) {
         val mainLayout = FrameLayout(this)
-        layoutInflater.inflate(R.layout.m8, mainLayout, true)
+        val m8Layout = layoutInflater.inflate(R.layout.m8, mainLayout, true)
+        val generalPreferences = GeneralSettings.getGeneralPreferences(this)
+        if (generalPreferences.showButtons) {
+            val buttons = layoutInflater.inflate(R.layout.buttons, mainLayout, false)
+            setButtonListeners(buttons)
+            mainLayout.addView(buttons)
+        } else {
+            setButtonListeners(m8Layout)
+        }
         val screen = mainLayout.findViewById<ViewGroup>(R.id.screen)
         screen.addView(view)
         super.setContentView(mainLayout)
-        setButtonListeners()
     }
 
-    // Hacky way of intercepting touch events on the SDLSurface so we can use margins as invisible buttons
-    override fun onSDLTouch(
-        touchDevId: Int, pointerFingerId: Int, action: Int, x: Float, y: Float, p: Float
-    ) {
-        if (!showButtons) {
-            // M8 SDL screen is 640x480
-            val ratio = mSurface.height / 480.0
-            val marginWidth = ((mSurface.width - (640.0 * ratio)) / 2.0) / mSurface.width
-            val isOnLeftMargin = x < marginWidth
-            val isDown = isOnLeftMargin && y > 2.0 / 3.0
-            val isUp = isOnLeftMargin && y < 1.0 / 3.0
-            val isLeft = isOnLeftMargin && !isDown && !isUp && x < marginWidth / 2.0
-            val isRight = isOnLeftMargin && !isDown && !isUp && !isLeft
-            val isOnRightMargin = x > (1.0 - marginWidth)
-            val isShift = isOnRightMargin && y > 0.5 && x < (1.0 - marginWidth / 2.0)
-            val isPlay = isOnRightMargin && y > 0.5 && !isShift
-            val isOption = isOnRightMargin && y <= 0.5 && x < (1.0 - marginWidth / 2.0)
-            val isEdit = isOnRightMargin && y <= 0.5 && !isOption
-            if (isDown) {
-                M8TouchListener.handleTouch(M8Key.DOWN, action)
-            } else if (isUp) {
-                M8TouchListener.handleTouch(M8Key.UP, action)
-            } else if (isLeft) {
-                M8TouchListener.handleTouch(M8Key.LEFT, action)
-            } else if (isRight) {
-                M8TouchListener.handleTouch(M8Key.RIGHT, action)
-            } else if (isShift) {
-                M8TouchListener.handleTouch(M8Key.SHIFT, action)
-            } else if (isPlay) {
-                M8TouchListener.handleTouch(M8Key.PLAY, action)
-            } else if (isOption) {
-                M8TouchListener.handleTouch(M8Key.OPTION, action)
-            } else if (isEdit) {
-                M8TouchListener.handleTouch(M8Key.EDIT, action)
-            }
-        }
+    private fun setButtonListeners(buttons: View) {
+        mapOf(
+            R.id.up to UP,
+            R.id.upAlt to UP,
+            R.id.down to DOWN,
+            R.id.downAlt to DOWN,
+            R.id.left to LEFT,
+            R.id.leftAlt to LEFT,
+            R.id.right to RIGHT,
+            R.id.rightAlt to RIGHT,
+            R.id.play to PLAY,
+            R.id.playAlt to PLAY,
+            R.id.shift to SHIFT,
+            R.id.shiftAlt to SHIFT,
+            R.id.option to OPTION,
+            R.id.optionAlt to OPTION,
+            R.id.edit to EDIT,
+            R.id.editAlt to EDIT,
+        )
+            .forEach { (id, key) -> setListener(buttons, id, key) }
+        resetModifiers()
     }
 
-
-    private fun setButtonListeners() {
-        val up = findViewById<View>(R.id.up)
-        up.setOnTouchListener(M8TouchListener(M8Key.UP))
-        val down = findViewById<View>(R.id.down)
-        down.setOnTouchListener(M8TouchListener(M8Key.DOWN))
-        val left = findViewById<View>(R.id.left)
-        left.setOnTouchListener(M8TouchListener(M8Key.LEFT))
-        val right = findViewById<View>(R.id.right)
-        right.setOnTouchListener(M8TouchListener(M8Key.RIGHT))
-        val play = findViewById<View>(R.id.play)
-        play.setOnTouchListener(M8TouchListener(M8Key.PLAY))
-        val shift = findViewById<View>(R.id.shift)
-        shift.setOnTouchListener(M8TouchListener(M8Key.SHIFT))
-        val option = findViewById<View>(R.id.option)
-        option.setOnTouchListener(M8TouchListener(M8Key.OPTION))
-        val edit = findViewById<View>(R.id.edit)
-        edit.setOnTouchListener(M8TouchListener(M8Key.EDIT))
-        M8TouchListener.resetModifiers()
+    private fun setListener(buttons: View, viewId: Int, key: M8Key) {
+        buttons.findViewById<View>(viewId)?.setOnTouchListener(M8TouchListener(key))
     }
 
     override fun getMainFunction() = "android_main"
