@@ -8,19 +8,14 @@
 
 #define NUM_TRANSFERS 10
 #define PACKET_SIZE 180
-#define NUM_PACKETS 10
+#define NUM_PACKETS 64
 
-static unsigned long num_bytes = 0, num_xfer = 0;
-static struct timeval tv_start;
-
-SDL_AudioDeviceID audio_device_id = 0;
+SDL_AudioDeviceID sdl_audio_device_id = 0;
 
 static int do_exit = 1;
 
 static void cb_xfr(struct libusb_transfer *xfr) {
     unsigned int i;
-
-    int len = 0;
 
     for (i = 0; i < xfr->num_iso_packets; i++) {
         struct libusb_iso_packet_descriptor *pack = &xfr->iso_packet_desc[i];
@@ -34,15 +29,10 @@ static void cb_xfr(struct libusb_transfer *xfr) {
 
         const uint8_t *data = libusb_get_iso_packet_buffer_simple(xfr, i);
 
-        if (audio_device_id != 0) {
-            SDL_QueueAudio(audio_device_id, data, pack->actual_length);
+        if (sdl_audio_device_id != 0) {
+            SDL_QueueAudio(sdl_audio_device_id, data, pack->actual_length);
         }
-
-        len += pack->length;
     }
-
-    num_bytes += len;
-    num_xfer++;
 
     if (libusb_submit_transfer(xfr) < 0) {
         SDL_Log("error re-submitting URB\n");
@@ -56,19 +46,6 @@ static int benchmark_in(libusb_device_handle *devh, uint8_t ep) {
     int num_iso_pack = NUM_PACKETS;
     int i;
 
-    /* NOTE: To reach maximum possible performance the program must
-     * submit *multiple* transfers here, not just one.
-     *
-     * When only one transfer is submitted there is a gap in the bus
-     * schedule from when the transfer completes until a new transfer
-     * is submitted by the callback. This causes some jitter for
-     * isochronous transfers and loss of throughput for bulk transfers.
-     *
-     * This is avoided by queueing multiple transfers in advance, so
-     * that the host controller is always kept busy, and will schedule
-     * more transfers on the bus while the callback is running for
-     * transfers which have completed on the bus.
-     */
     for (i = 0; i < NUM_TRANSFERS; i++) {
         xfr[i] = libusb_alloc_transfer(num_iso_pack);
         if (!xfr[i]) {
@@ -83,15 +60,15 @@ static int benchmark_in(libusb_device_handle *devh, uint8_t ep) {
         libusb_submit_transfer(xfr[i]);
     }
 
-    gettimeofday(&tv_start, NULL);
-
     return 1;
 }
 
-int aaudio_device_id = 0;
+int audio_device_id = 0;
+int audio_buffer_size = 2048;
 
-void set_audio_device(int device_id) {
-    aaudio_device_id = device_id;
+void set_audio_device(int device_id, int buffer_size) {
+    audio_device_id = device_id;
+    audio_buffer_size = buffer_size;
 }
 
 int audio_setup(libusb_device_handle *devh) {
@@ -135,24 +112,30 @@ int audio_setup(libusb_device_handle *devh) {
     audio_spec.format = AUDIO_S16;
     audio_spec.channels = 2;
     audio_spec.freq = 44100;
+    audio_spec.samples = 2 * audio_buffer_size;
 
     SDL_AudioSpec _obtained;
     SDL_zero(_obtained);
 
     SDL_Log("Current audio driver is %s and device %d", SDL_GetCurrentAudioDriver(),
-            aaudio_device_id);
+            audio_device_id);
 
-    if (SDL_strcasecmp(SDL_GetCurrentAudioDriver(), "openslES") == 0 || aaudio_device_id == 0) {
+    if (SDL_strcasecmp(SDL_GetCurrentAudioDriver(), "openslES") == 0 || audio_device_id == 0) {
         SDL_Log("Using default audio device");
-        audio_device_id = SDL_OpenAudioDevice(NULL, 0, &audio_spec, &_obtained, 0);
+        sdl_audio_device_id = SDL_OpenAudioDevice(NULL, 0, &audio_spec, &_obtained, 0);
     } else {
-        int n = (int) (log10(aaudio_device_id) + 1);
+        int n = (int) (log10(audio_device_id) + 1);
         char audio_device_name[n];
-        SDL_itoa(aaudio_device_id, audio_device_name, 10);
-        audio_device_id = SDL_OpenAudioDevice(audio_device_name, 0, &audio_spec, &_obtained, 0);
+        SDL_itoa(audio_device_id, audio_device_name, 10);
+        sdl_audio_device_id = SDL_OpenAudioDevice(audio_device_name, 0, &audio_spec, &_obtained, 0);
     }
 
-    SDL_PauseAudioDevice(audio_device_id, 0);
+    SDL_Log("Obtained audio spec. Sample rate: %d, channels: %d, samples: %d, size: %d",
+            _obtained.freq,
+            _obtained.channels,
+            _obtained.samples, +_obtained.size);
+
+    SDL_PauseAudioDevice(sdl_audio_device_id, 0);
 
     // Good to go
     do_exit = 0;
@@ -181,10 +164,10 @@ int audio_destroy(libusb_device_handle *devh) {
         return rc;
     }
 
-    if (audio_device_id != 0) {
-        SDL_Log("Closing audio device %d", audio_device_id);
-        int device = audio_device_id;
-        audio_device_id = 0;
+    if (sdl_audio_device_id != 0) {
+        SDL_Log("Closing audio device %d", sdl_audio_device_id);
+        SDL_AudioDeviceID device = sdl_audio_device_id;
+        sdl_audio_device_id = 0;
         SDL_CloseAudioDevice(device);
     }
 

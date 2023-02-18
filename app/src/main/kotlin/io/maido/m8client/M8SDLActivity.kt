@@ -6,7 +6,9 @@ import android.graphics.Color
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
+import android.media.AudioManager
 import android.os.Build
+import android.os.Process
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -57,6 +59,7 @@ class M8SDLActivity : SDLActivity() {
         buttons.visibility = if (showButtons) View.VISIBLE else View.GONE
         openUsbConnection(generalPreferences.audioDevice)
         thread {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
             Log.d(TAG, "Starting USB Loop thread")
             while (running) {
                 loop()
@@ -64,6 +67,15 @@ class M8SDLActivity : SDLActivity() {
             Log.d(TAG, "USB Loop thread ended")
         }
         super.onStart()
+    }
+
+    private fun getBufferSize(): Int {
+        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val framesPerBuffer: String? =
+            am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)
+        return framesPerBuffer?.let { str ->
+            Integer.parseInt(str).takeUnless { it == 0 }
+        } ?: 256 // Use default
     }
 
     private fun openUsbConnection(audioDeviceId: Int) {
@@ -74,7 +86,7 @@ class M8SDLActivity : SDLActivity() {
                 TAG,
                 "Setting file descriptor to ${it.fileDescriptor} and audio device to $audioDeviceId"
             )
-            connect(it.fileDescriptor, audioDeviceId)
+            connect(it.fileDescriptor, audioDeviceId, getBufferSize())
         }
     }
 
@@ -167,9 +179,16 @@ class M8SDLActivity : SDLActivity() {
 
     override fun getMainFunction() = "android_main"
 
-    private external fun connect(fileDescriptor: Int, audioDeviceId: Int)
+    private external fun connect(
+        fileDescriptor: Int,
+        audioDeviceId: Int,
+        bufferSize: Int
+    )
+
     private external fun setAudioDriver(audioDriver: String?)
 
     private external fun lockOrientation(lock: Boolean)
     private external fun loop()
+
+
 }
