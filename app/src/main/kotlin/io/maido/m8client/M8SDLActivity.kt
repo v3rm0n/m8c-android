@@ -57,14 +57,6 @@ class M8SDLActivity : SDLActivity() {
         lockOrientation(generalPreferences.lockOrientation)
         running = true
         openUsbConnection(generalPreferences.audioDevice)
-        thread {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
-            Log.d(TAG, "Starting USB Loop thread")
-            while (running) {
-                loop()
-            }
-            Log.d(TAG, "USB Loop thread ended")
-        }
         super.onStart()
     }
 
@@ -175,7 +167,5 @@ class M8SDLActivity : SDLActivity() {
     private external fun setAudioDriver(audioDriver: String?)
 
     private external fun lockOrientation(lock: Boolean)
-    private external fun loop()
-
 
 }

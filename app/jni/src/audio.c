@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <SDL.h>
 #include <serial.h>
+#include <pthread.h>
 
 #define EP_ISO_IN 0x85
 #define IFACE_NUM 4
@@ -71,6 +72,20 @@ void set_audio_device(int device_id, int buffer_size) {
     audio_buffer_size = buffer_size;
 }
 
+static pthread_t audio_t;
+
+void *audio_loop(void *data) {
+    while (!do_exit) {
+        int rc = libusb_handle_events(NULL);
+        if (rc != LIBUSB_SUCCESS) {
+            SDL_Log("Audio loop error: %s\n", libusb_error_name(rc));
+            break;
+        }
+    }
+    return NULL;
+}
+
+
 int audio_setup(libusb_device_handle *devh) {
     SDL_Log("USB audio setup");
 
@@ -112,7 +127,7 @@ int audio_setup(libusb_device_handle *devh) {
     audio_spec.format = AUDIO_S16;
     audio_spec.channels = 2;
     audio_spec.freq = 44100;
-    audio_spec.samples = 2 * audio_buffer_size;
+    audio_spec.samples = 8 * audio_buffer_size;
 
     SDL_AudioSpec _obtained;
     SDL_zero(_obtained);
@@ -137,6 +152,8 @@ int audio_setup(libusb_device_handle *devh) {
 
     SDL_PauseAudioDevice(sdl_audio_device_id, 0);
 
+    pthread_create(&audio_t, NULL, audio_loop, "AUDIO");
+
     // Good to go
     do_exit = 0;
     SDL_Log("Starting capture");
@@ -152,9 +169,18 @@ int audio_setup(libusb_device_handle *devh) {
 int audio_destroy(libusb_device_handle *devh) {
     SDL_Log("Closing audio");
 
-    int rc;
+    int i, rc;
+
+    for (i = 0; i < NUM_TRANSFERS; i++) {
+        rc = libusb_cancel_transfer(xfr[i]);
+        if (rc < 0) {
+            SDL_Log("Error cancelling transfer: %s\n", libusb_error_name(rc));
+        }
+    }
 
     do_exit = 1;
+
+    pthread_join(audio_t, NULL);
 
     SDL_Log("Freeing interface %d", IFACE_NUM);
 
@@ -175,13 +201,4 @@ int audio_destroy(libusb_device_handle *devh) {
     return 1;
 }
 
-void audio_loop() {
-    while (!do_exit) {
-        int rc = libusb_handle_events(NULL);
-        if (rc != LIBUSB_SUCCESS) {
-            SDL_Log("Audio loop error: %s\n", libusb_error_name(rc));
-            break;
-        }
-    }
-}
 

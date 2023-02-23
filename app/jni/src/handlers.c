@@ -6,11 +6,6 @@
 int device_active = 0;
 
 JNIEXPORT void JNICALL
-Java_io_maido_m8client_M8SDLActivity_loop(JNIEnv *env, jobject thiz) {
-    audio_loop();
-}
-
-JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8SDLActivity_connect(JNIEnv *env, jobject thiz,
                                              jint fd, jint audiodevice, jint buffer_size) {
     device_active = 1;
