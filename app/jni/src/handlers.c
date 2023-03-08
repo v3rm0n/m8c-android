@@ -7,10 +7,10 @@ int device_active = 0;
 
 JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8SDLActivity_connect(JNIEnv *env, jobject thiz,
-                                             jint fd, jint audiodevice, jint buffer_size) {
+                                             jint fd, jint audiodevice) {
     device_active = 1;
     SDL_Log("Connecting to the device");
-    set_audio_device(audiodevice, buffer_size);
+    set_audio_device(audiodevice);
     set_usb_init_callback(audio_setup);
     set_usb_destroy_callback(audio_destroy);
     init_serial_with_file_descriptor(fd);

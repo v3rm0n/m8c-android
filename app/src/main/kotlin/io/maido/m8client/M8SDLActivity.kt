@@ -7,9 +7,7 @@ import android.graphics.Color
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
-import android.media.AudioManager
 import android.os.Build
-import android.os.Process
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +16,6 @@ import io.maido.m8client.M8Key.*
 import io.maido.m8client.M8TouchListener.Companion.resetModifiers
 import io.maido.m8client.settings.GeneralSettings
 import org.libsdl.app.SDLActivity
-import kotlin.concurrent.thread
 
 
 class M8SDLActivity : SDLActivity() {
@@ -60,15 +57,6 @@ class M8SDLActivity : SDLActivity() {
         super.onStart()
     }
 
-    private fun getBufferSize(): Int {
-        val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val framesPerBuffer: String? =
-            am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)
-        return framesPerBuffer?.let { str ->
-            Integer.parseInt(str).takeUnless { it == 0 }
-        } ?: 256 // Use default
-    }
-
     private fun openUsbConnection(audioDeviceId: Int) {
         val usbDevice = getUsbDevice()
         val usbManager = getSystemService(UsbManager::class.java)!!
@@ -77,7 +65,7 @@ class M8SDLActivity : SDLActivity() {
                 TAG,
                 "Setting file descriptor to ${it.fileDescriptor} and audio device to $audioDeviceId"
             )
-            connect(it.fileDescriptor, audioDeviceId, getBufferSize())
+            connect(it.fileDescriptor, audioDeviceId)
         }
     }
 
@@ -160,8 +148,7 @@ class M8SDLActivity : SDLActivity() {
 
     private external fun connect(
         fileDescriptor: Int,
-        audioDeviceId: Int,
-        bufferSize: Int
+        audioDeviceId: Int
     )
 
     private external fun setAudioDriver(audioDriver: String?)

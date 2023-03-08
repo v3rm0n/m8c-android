@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <serial.h>
 #include <pthread.h>
+#include "ringbuffer.h"
 
 #define EP_ISO_IN 0x85
 #define IFACE_NUM 4
@@ -12,8 +13,23 @@
 #define NUM_PACKETS 64
 
 SDL_AudioDeviceID sdl_audio_device_id = 0;
+RingBuffer *audio_buffer = NULL;
 
 static int do_exit = 1;
+
+void audio_callback(void *userdata, Uint8 *stream,
+                    int len) {
+    uint32_t read_len = ring_buffer_pop(audio_buffer, stream, len);
+
+    if (read_len == -1) {
+        SDL_Log("Buffer underflow!");
+    }
+
+    // If we didn't read the full len bytes, fill the rest with zeros
+    if (read_len < len) {
+        SDL_memset(&stream[read_len], 0, len - read_len);
+    }
+}
 
 static void cb_xfr(struct libusb_transfer *xfr) {
     unsigned int i;
@@ -29,9 +45,11 @@ static void cb_xfr(struct libusb_transfer *xfr) {
         }
 
         const uint8_t *data = libusb_get_iso_packet_buffer_simple(xfr, i);
-
         if (sdl_audio_device_id != 0) {
-            SDL_QueueAudio(sdl_audio_device_id, data, pack->actual_length);
+            uint32_t actual = ring_buffer_push(audio_buffer, data, pack->actual_length);
+            if (actual == -1) {
+                SDL_Log("Buffer overflow!");
+            }
         }
     }
 
@@ -65,16 +83,14 @@ static int benchmark_in(libusb_device_handle *devh, uint8_t ep) {
 }
 
 int audio_device_id = 0;
-int audio_buffer_size = 2048;
 
-void set_audio_device(int device_id, int buffer_size) {
+void set_audio_device(int device_id) {
     audio_device_id = device_id;
-    audio_buffer_size = buffer_size;
 }
 
-static pthread_t audio_t;
+static SDL_Thread *audio_thread;
 
-void *audio_loop(void *data) {
+int audio_loop(void *data) {
     while (!do_exit) {
         int rc = libusb_handle_events(NULL);
         if (rc != LIBUSB_SUCCESS) {
@@ -82,7 +98,7 @@ void *audio_loop(void *data) {
             break;
         }
     }
-    return NULL;
+    return 0;
 }
 
 
@@ -127,7 +143,7 @@ int audio_setup(libusb_device_handle *devh) {
     audio_spec.format = AUDIO_S16;
     audio_spec.channels = 2;
     audio_spec.freq = 44100;
-    audio_spec.samples = 8 * audio_buffer_size;
+    audio_spec.callback = &audio_callback;
 
     SDL_AudioSpec _obtained;
     SDL_zero(_obtained);
@@ -145,6 +161,8 @@ int audio_setup(libusb_device_handle *devh) {
         sdl_audio_device_id = SDL_OpenAudioDevice(audio_device_name, 0, &audio_spec, &_obtained, 0);
     }
 
+    audio_buffer = ring_buffer_create(4 * _obtained.size);
+
     SDL_Log("Obtained audio spec. Sample rate: %d, channels: %d, samples: %d, size: %d",
             _obtained.freq,
             _obtained.channels,
@@ -152,7 +170,7 @@ int audio_setup(libusb_device_handle *devh) {
 
     SDL_PauseAudioDevice(sdl_audio_device_id, 0);
 
-    pthread_create(&audio_t, NULL, audio_loop, "AUDIO");
+    audio_thread = SDL_CreateThread(&audio_loop, "Audio", NULL);
 
     // Good to go
     do_exit = 0;
@@ -180,7 +198,7 @@ int audio_destroy(libusb_device_handle *devh) {
 
     do_exit = 1;
 
-    pthread_join(audio_t, NULL);
+    SDL_WaitThread(audio_thread, NULL);
 
     SDL_Log("Freeing interface %d", IFACE_NUM);
 
@@ -198,6 +216,8 @@ int audio_destroy(libusb_device_handle *devh) {
     }
 
     SDL_Log("Audio closed");
+
+    ring_buffer_free(audio_buffer);
     return 1;
 }
 
