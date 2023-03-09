@@ -33,7 +33,6 @@ class M8SDLActivity : SDLActivity() {
 
     }
 
-    private var running = true
     private var usbConnection: UsbDeviceConnection? = null
 
     @Suppress("Deprecation")
@@ -47,32 +46,23 @@ class M8SDLActivity : SDLActivity() {
 
     override fun onStart() {
         val generalPreferences = GeneralSettings.getGeneralPreferences(this)
-        val audioDriver = generalPreferences.audioDriver
-        if (audioDriver != null) {
-            setAudioDriver(audioDriver)
-        }
+        hintAudioDriver(generalPreferences.audioDriver)
         lockOrientation(generalPreferences.lockOrientation)
-        running = true
-        openUsbConnection(generalPreferences.audioDevice)
+        openUsbConnection()
         super.onStart()
     }
 
-    private fun openUsbConnection(audioDeviceId: Int) {
-        val usbDevice = getUsbDevice()
+    private fun openUsbConnection() {
         val usbManager = getSystemService(UsbManager::class.java)!!
-        usbConnection = usbManager.openDevice(usbDevice)?.also {
-            Log.d(
-                TAG,
-                "Setting file descriptor to ${it.fileDescriptor} and audio device to $audioDeviceId"
-            )
-            connect(it.fileDescriptor, audioDeviceId)
+        usbConnection = usbManager.openDevice(getUsbDevice())?.also {
+            Log.d(TAG, "Setting file descriptor to ${it.fileDescriptor} ")
+            connect(it.fileDescriptor)
         }
     }
 
     override fun onStop() {
         super.onStop()
         usbConnection?.close()
-        running = false
     }
 
     override fun onUnhandledMessage(command: Int, param: Any?): Boolean {
@@ -144,14 +134,9 @@ class M8SDLActivity : SDLActivity() {
         buttons.findViewById<View>(viewId)?.setOnTouchListener(M8TouchListener(key))
     }
 
-    override fun getMainFunction() = "android_main"
+    private external fun connect(fileDescriptor: Int)
 
-    private external fun connect(
-        fileDescriptor: Int,
-        audioDeviceId: Int
-    )
-
-    private external fun setAudioDriver(audioDriver: String?)
+    private external fun hintAudioDriver(audioDriver: String?)
 
     private external fun lockOrientation(lock: Boolean)
 

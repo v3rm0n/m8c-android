@@ -26,8 +26,8 @@ class M8Configuration(context: Context) {
         configFile.put(key.section, key.option, value)
     }
 
-    fun copyConfiguration(gamepadPreferences: Map<M8GamepadButton, String?>) {
-        gamepadPreferences.forEach(this::set)
+    fun copyConfiguration(configuration: Map<out M8ConfigurationOption, String?>) {
+        configuration.forEach(this::set)
         ByteArrayOutputStream().use { output ->
             configFile.store(output)
             copyFile(CONFIG_FILE_NAME, ByteArrayInputStream(output.toByteArray()))
@@ -55,4 +55,14 @@ enum class M8GamepadButton : M8ConfigurationOption {
     override val option = "gamepad_${name.lowercase()}"
 
     override val section = "gamepad"
+}
+
+enum class M8AudioOption : M8ConfigurationOption {
+    ENABLED,
+    BUFFER_SIZE,
+    DEVICE_NAME;
+
+    override val option = "audio_${name.lowercase()}"
+
+    override val section = "audio"
 }

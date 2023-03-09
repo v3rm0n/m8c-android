@@ -1,18 +1,14 @@
+#include <SDL.h>
 #include <jni.h>
 #include <serial.h>
 #include "audio.h"
-#include "SDL.h"
 
 int device_active = 0;
 
 JNIEXPORT void JNICALL
-Java_io_maido_m8client_M8SDLActivity_connect(JNIEnv *env, jobject thiz,
-                                             jint fd, jint audiodevice) {
+Java_io_maido_m8client_M8SDLActivity_connect(JNIEnv *env, jobject thiz, jint fd) {
     device_active = 1;
     SDL_Log("Connecting to the device");
-    set_audio_device(audiodevice);
-    set_usb_init_callback(audio_setup);
-    set_usb_destroy_callback(audio_destroy);
     init_serial_with_file_descriptor(fd);
 }
 
@@ -26,12 +22,14 @@ Java_io_maido_m8client_M8TouchListener_00024Companion_sendClickEvent(JNIEnv *env
 }
 
 JNIEXPORT void JNICALL
-Java_io_maido_m8client_M8SDLActivity_setAudioDriver(JNIEnv *env, jobject thiz,
-                                                    jstring audio_driver) {
-    const char *path;
-    path = (*env)->GetStringUTFChars(env, audio_driver, NULL);
-    SDL_Log("Setting audio driver to %s", path);
-    SDL_SetHint(SDL_HINT_AUDIODRIVER, path);
+Java_io_maido_m8client_M8SDLActivity_hintAudioDriver(JNIEnv *env, jobject thiz,
+                                                     jstring audio_driver) {
+    if (audio_driver != NULL) {
+        const char *path;
+        path = (*env)->GetStringUTFChars(env, audio_driver, NULL);
+        SDL_Log("Setting audio driver to %s", path);
+        SDL_SetHint(SDL_HINT_AUDIODRIVER, path);
+    }
 }
 
 JNIEXPORT void JNICALL
