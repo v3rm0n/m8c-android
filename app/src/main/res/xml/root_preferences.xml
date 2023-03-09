@@ -35,7 +35,7 @@
 
     <PreferenceCategory app:title="@string/input">
         <Preference
-            app:fragment="io.maido.m8client.settings.GamepadButtonSettings"
+            app:fragment="io.maido.m8client.settings.GamepadSettings"
             app:summary="@string/gamepad_mappings_summary"
             app:title="@string/gamepad_mappings" />
     </PreferenceCategory>
