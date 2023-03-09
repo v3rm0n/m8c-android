@@ -898,16 +898,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         return result;
     }
 
-    public static void onTouch(int touchDevId, int pointerFingerId,
-                               int action, float x,
-                               float y, float p) {
-        SDLActivity.mSingleton.onSDLTouch(touchDevId, pointerFingerId, action, x, y, p);
-        onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
-    }
-
-    protected void onSDLTouch(int touchDevId, int pointerFingerId, int action, float x, float y, float p) {
-    }
-
     // C functions we call
     public static native String nativeGetVersion();
     public static native int nativeSetupJNI();
@@ -981,15 +971,18 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         /* If set, hint "explicitly controls which UI orientations are allowed". */
         if (hint.contains("LandscapeRight") && hint.contains("LandscapeLeft")) {
             orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
-        } else if (hint.contains("LandscapeRight")) {
-            orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
         } else if (hint.contains("LandscapeLeft")) {
+            orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+        } else if (hint.contains("LandscapeRight")) {
             orientation_landscape = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
         }
 
-        if (hint.contains("Portrait") && hint.contains("PortraitUpsideDown")) {
+        /* exact match to 'Portrait' to distinguish with PortraitUpsideDown */
+        boolean contains_Portrait = hint.contains("Portrait ") || hint.endsWith("Portrait");
+
+        if (contains_Portrait && hint.contains("PortraitUpsideDown")) {
             orientation_portrait = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
-        } else if (hint.contains("Portrait")) {
+        } else if (contains_Portrait) {
             orientation_portrait = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
         } else if (hint.contains("PortraitUpsideDown")) {
             orientation_portrait = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
