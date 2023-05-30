@@ -28,4 +28,4 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: m8c.apk
+          files: app-debug.apk
