@@ -1,12 +1,6 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'io.sentry.android.gradle'
-}
-
-sentry {
-    uploadNativeSymbols.set(true)
-    includeNativeSources.set(true)
 }
 
 android {
