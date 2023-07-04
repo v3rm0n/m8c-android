@@ -62,13 +62,13 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         BluetoothGatt mGatt;
         boolean mResult = true;
 
-        private GattOperation(BluetoothGatt gatt, GattOperation.Operation operation, UUID uuid) {
+        private GattOperation(BluetoothGatt gatt, Operation operation, UUID uuid) {
             mGatt = gatt;
             mOp = operation;
             mUuid = uuid;
         }
 
-        private GattOperation(BluetoothGatt gatt, GattOperation.Operation operation, UUID uuid, byte[] value) {
+        private GattOperation(BluetoothGatt gatt, Operation operation, UUID uuid, byte[] value) {
             mGatt = gatt;
             mOp = operation;
             mUuid = uuid;
@@ -186,7 +186,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
     // Because on Chromebooks we show up as a dual-mode device, it will attempt to connect TRANSPORT_AUTO, which will use TRANSPORT_BREDR instead
     // of TRANSPORT_LE.  Let's force ourselves to connect low energy.
     private BluetoothGatt connectGatt(boolean managed) {
-        if (Build.VERSION.SDK_INT >= 23) {
+        if (Build.VERSION.SDK_INT >= 23 /* Android 6.0 (M) */) {
             try {
                 return mDevice.connectGatt(mManager.getContext(), managed, this, TRANSPORT_LE);
             } catch (Exception e) {
@@ -397,17 +397,17 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
     }
 
     private void enableNotification(UUID chrUuid) {
-        GattOperation op = HIDDeviceBLESteamController.GattOperation.enableNotification(mGatt, chrUuid);
+        GattOperation op = GattOperation.enableNotification(mGatt, chrUuid);
         queueGattOperation(op);
     }
 
     public void writeCharacteristic(UUID uuid, byte[] value) {
-        GattOperation op = HIDDeviceBLESteamController.GattOperation.writeCharacteristic(mGatt, uuid, value);
+        GattOperation op = GattOperation.writeCharacteristic(mGatt, uuid, value);
         queueGattOperation(op);
     }
 
     public void readCharacteristic(UUID uuid) {
-        GattOperation op = HIDDeviceBLESteamController.GattOperation.readCharacteristic(mGatt, uuid);
+        GattOperation op = GattOperation.readCharacteristic(mGatt, uuid);
         queueGattOperation(op);
     }
 
@@ -429,7 +429,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
                     }
                 });
             }
-        } 
+        }
         else if (newState == 0) {
             mIsConnected = false;
         }
