@@ -15,10 +15,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import io.maido.m8client.M8Key.*
-import io.maido.m8client.M8TouchListener.Companion.resetModifiers
 import io.maido.m8client.settings.GeneralSettings
 import org.libsdl.app.SDLActivity
-import java.util.concurrent.Executors
 
 
 class M8SDLActivity : SDLActivity() {
@@ -133,7 +131,6 @@ class M8SDLActivity : SDLActivity() {
             R.id.editAlt to EDIT,
         )
             .forEach { (id, key) -> setListener(buttons, id, key) }
-        resetModifiers()
     }
 
     private fun setListener(buttons: View, viewId: Int, key: M8Key) {

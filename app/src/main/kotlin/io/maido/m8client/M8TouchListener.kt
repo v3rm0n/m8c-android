@@ -19,10 +19,9 @@ internal class M8TouchListener(
 
     companion object {
         private val TAG = M8TouchListener::class.simpleName
-        private val modifiers = HashSet<M8Key>()
         private const val reset = 132.toChar()
         private const val exit = 96.toChar()
-        fun resetModifiers() = modifiers.clear()
+        private var keyState = 0
 
         private external fun sendClickEvent(event: Char)
 
@@ -33,8 +32,8 @@ internal class M8TouchListener(
         fun handleTouch(key: M8Key, action: Int): Boolean {
             when (action) {
                 ACTION_DOWN, ACTION_POINTER_DOWN -> {
-                    modifiers.add(key)
-                    when (val code = key.getCode(modifiers)) {
+                    keyState = keyState or key.code
+                    when (keyState.toChar()) {
                         reset -> {
                             Log.d(TAG, "Sending reset")
                             resetScreen()
@@ -46,16 +45,16 @@ internal class M8TouchListener(
                         }
 
                         else -> {
-                            Log.d(TAG, "Sending $key as ${code.code}")
-                            sendClickEvent(code)
+                            Log.d(TAG, "Sending key down $key as $keyState")
+                            sendClickEvent(keyState.toChar())
                         }
                     }
                 }
 
                 ACTION_UP, ACTION_POINTER_UP -> {
-                    modifiers.remove(key)
-                    Log.d(TAG, "Key up $key")
-                    sendClickEvent(0.toChar())
+                    keyState = keyState and key.code.inv()
+                    Log.d(TAG, "Sending key up $key as $keyState")
+                    sendClickEvent(keyState.toChar())
                 }
             }
             return true
