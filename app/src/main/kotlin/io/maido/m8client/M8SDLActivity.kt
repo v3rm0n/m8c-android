@@ -8,6 +8,7 @@ import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
 import android.os.Build
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -46,11 +47,19 @@ class M8SDLActivity : SDLActivity() {
     }
 
     override fun onStart() {
-        val generalPreferences = GeneralSettings.getGeneralPreferences(this)
-        hintAudioDriver(generalPreferences.audioDriver)
-        lockOrientation(generalPreferences.lockOrientation)
-        openUsbConnection()
+        Log.d(TAG, "onStart()")
         super.onStart()
+    }
+
+    override fun onResume() {
+        Log.d(TAG, "onResume()")
+        super.onResume()
+    }
+
+    override fun onDestroy() {
+        Log.d(TAG, "onDestroy()")
+        super.onDestroy()
+        usbConnection?.close()
     }
 
     private fun openUsbConnection() {
@@ -62,8 +71,17 @@ class M8SDLActivity : SDLActivity() {
     }
 
     override fun onStop() {
+        Log.d(TAG, "onStop()")
         super.onStop()
-        usbConnection?.close()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d(TAG, "onCreate()")
+        super.onCreate(savedInstanceState)
+        val generalPreferences = GeneralSettings.getGeneralPreferences(this)
+        hintAudioDriver(generalPreferences.audioDriver)
+        lockOrientation(generalPreferences.lockOrientation)
+        openUsbConnection()
     }
 
     override fun onUnhandledMessage(command: Int, param: Any?): Boolean {
