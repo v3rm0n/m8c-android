@@ -40,6 +40,18 @@ interface M8ConfigurationOption {
     val section: String
 }
 
+enum class M8GraphicsOption : M8ConfigurationOption {
+    FULLSCREEN,
+    USE_GPU,
+    IDLE_MS,
+    WAIT_FOR_DEVICE,
+    WAIT_PACKETS;
+
+    override val option = name.lowercase()
+
+    override val section = "graphics"
+}
+
 enum class M8GamepadButton : M8ConfigurationOption {
     UP,
     LEFT,

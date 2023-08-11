@@ -29,6 +29,10 @@
     <string name="gamepad_mappings">Gamepad mappings</string>
     <string name="gamepad_mappings_summary">Use custom gamepad button mappings</string>
     <string name="input">Input</string>
+    <string name="advanced">Advanced</string>
+    <string name="idle_ms_pref">idle_ms</string>
+    <string name="idle_ms">Idle ms</string>
+    <string name="idle_ms_summary">The delay amount in ms in the main loop, decrease value for faster operation, increase value if too much cpu usage</string>
     <string-array name="sdl_gamecontroller_buttons">
         <item>A</item>
         <item>B</item>

@@ -15,6 +15,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.preference.Preference
@@ -94,6 +95,7 @@ class M8StartActivity : AppCompatActivity(R.layout.settings),
                 recreate()
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -128,7 +130,18 @@ class M8StartActivity : AppCompatActivity(R.layout.settings),
     private fun requestM8Permission(usbManager: UsbManager, usbDevice: UsbDevice) {
         val intent = Intent(ACTION_USB_PERMISSION)
         val permissionIntent = getBroadcast(this, 0, intent, FLAG_IMMUTABLE)
-        registerReceiver(usbReceiver, IntentFilter(ACTION_USB_PERMISSION))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(
+                usbReceiver,
+                IntentFilter(ACTION_USB_PERMISSION),
+                RECEIVER_NOT_EXPORTED
+            )
+        } else {
+            registerReceiver(
+                usbReceiver,
+                IntentFilter(ACTION_USB_PERMISSION)
+            )
+        }
         usbManager.requestPermission(usbDevice, permissionIntent)
     }
 
@@ -136,7 +149,8 @@ class M8StartActivity : AppCompatActivity(R.layout.settings),
         val generalPreferences = GeneralSettings.getGeneralPreferences(this)
         configuration.copyConfiguration(
             GamepadSettings.getGamepadPreferences(this) + mapOf(
-                M8AudioOption.DEVICE_NAME to generalPreferences.audioDevice.toString()
+                M8AudioOption.DEVICE_NAME to generalPreferences.audioDevice.toString(),
+                M8GraphicsOption.IDLE_MS to generalPreferences.idleMs.toString(),
             )
         )
         startM8SDLActivity(this, usbDevice)

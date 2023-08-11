@@ -22,8 +22,9 @@ class GeneralSettings : PreferenceFragmentCompat() {
             val showButtons = preferences.getBoolean(context.getString(R.string.buttons_pref), true)
             val lockOrientation =
                 preferences.getBoolean(context.getString(R.string.lock_orientation_pref), false)
+            val idleMs = preferences.getString(context.getString(R.string.idle_ms_pref), "0")!!
             return GeneralPreferences(
-                showButtons, lockOrientation, audioDevice, audioDriver
+                showButtons, lockOrientation, audioDevice, audioDriver, idleMs.toInt()
             )
         }
     }
@@ -77,4 +78,5 @@ data class GeneralPreferences(
     val lockOrientation: Boolean = false,
     val audioDevice: Int = 0,
     val audioDriver: String? = null,
+    val idleMs: Int = 0
 )

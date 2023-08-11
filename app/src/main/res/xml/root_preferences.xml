@@ -40,4 +40,12 @@
             app:title="@string/gamepad_mappings" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/advanced">
+        <EditTextPreference
+            app:defaultValue="0"
+            app:key="@string/idle_ms_pref"
+            app:summary="@string/idle_ms_summary"
+            app:title="@string/idle_ms" />
+    </PreferenceCategory>
+
 </PreferenceScreen>
