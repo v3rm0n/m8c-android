@@ -5,9 +5,11 @@ import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Bundle
 import androidx.core.content.getSystemService
+import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
+import io.maido.m8client.BuildConfig
 import io.maido.m8client.R
 
 class GeneralSettings : PreferenceFragmentCompat() {
@@ -23,8 +25,15 @@ class GeneralSettings : PreferenceFragmentCompat() {
             val lockOrientation =
                 preferences.getBoolean(context.getString(R.string.lock_orientation_pref), false)
             val idleMs = preferences.getString(context.getString(R.string.idle_ms_pref), "0")!!
+            val audioBuffer =
+                preferences.getString(context.getString(R.string.audio_buffer_pref), "4096")!!
             return GeneralPreferences(
-                showButtons, lockOrientation, audioDevice, audioDriver, idleMs.toInt()
+                showButtons,
+                lockOrientation,
+                audioDevice,
+                audioDriver,
+                audioBuffer.toInt(),
+                idleMs.toInt()
             )
         }
     }
@@ -32,6 +41,8 @@ class GeneralSettings : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
         addAudioDevicePreferenceValues()
+        val version: EditTextPreference? = findPreference(getString(R.string.version_pref))
+        version?.title = "Version ${BuildConfig.VERSION_NAME}"
     }
 
     private fun addAudioDevicePreferenceValues() {
@@ -78,5 +89,6 @@ data class GeneralPreferences(
     val lockOrientation: Boolean = false,
     val audioDevice: Int = 0,
     val audioDriver: String? = null,
+    val audioBuffer: Int = 4096,
     val idleMs: Int = 0
 )

@@ -151,6 +151,7 @@ class M8StartActivity : AppCompatActivity(R.layout.settings),
             GamepadSettings.getGamepadPreferences(this) + mapOf(
                 M8AudioOption.DEVICE_NAME to generalPreferences.audioDevice.toString(),
                 M8GraphicsOption.IDLE_MS to generalPreferences.idleMs.toString(),
+                M8AudioOption.BUFFER_SIZE to generalPreferences.audioBuffer.toString(),
             )
         )
         startM8SDLActivity(this, usbDevice)

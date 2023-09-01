@@ -6,26 +6,33 @@ on:
       - "v*.*.*"
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Wait for build to succeed
-        uses: lewagon/wait-on-check-action@v1.3.1
+      - uses: actions/checkout@v3
+
+      - name: Set tag
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
         with:
-          ref: ${{ github.sha }}
-          check-name: build
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Download artifact
-        id: download-artifact
-        uses: dawidd6/action-download-artifact@v2
+          java-version: 17
+          distribution: temurin
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Git Submodule Update
+        run: git submodule update --init
+
+      - name: Build M8Client
+        uses: gradle/gradle-build-action@v2
         with:
-          workflow: build.yml
-          workflow_conclusion: success
-          commit: ${{ github.sha }}
-          name: m8c.apk
+          arguments: --build-cache -PversionName=${{ steps.vars.outputs.tag }} build
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: app-debug.apk
+          files: app/build/outputs/apk/debug/app-debug.apk
