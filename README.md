@@ -1,6 +1,6 @@
 # m8c for Android
 
-![build](https://github.com/v3rm0n/m8c-android/actions/workflows/build.yml/badge.svg)
+![build](https://github.com/v3rm0n/m8c-android/actions/workflows/release.yml/badge.svg)
 
 Android wrapper for the awesome [m8c](https://github.com/laamaa/m8c). 
 
