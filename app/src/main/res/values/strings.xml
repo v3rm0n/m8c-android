@@ -43,6 +43,7 @@
     <string name="idle_ms">Idle ms</string>
     <string name="idle_ms_summary">The delay amount in ms in the main loop, decrease value for faster operation, increase value if too much cpu usage</string>
     <string name="clear_settings">Clear settings</string>
+    <string name="version_pref">version_pref</string>
     <string-array name="sdl_gamecontroller_buttons">
         <item>A</item>
         <item>B</item>
