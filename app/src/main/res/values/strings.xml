@@ -13,14 +13,23 @@
     <string name="show_onscreen_buttons">Show onscreen buttons</string>
     <string name="choose_audio_device">Choose audio device</string>
     <string name="choose_audio_driver">Choose audio driver</string>
+    <string name="choose_audio_buffer">Choose audio buffer size</string>
     <string-array name="audio_drivers">
         <item>AAudio</item>
         <item>android</item>
         <item>openslES</item>
     </string-array>
+    <string-array name="audio_buffers">
+        <item>512</item>
+        <item>1024</item>
+        <item>2048</item>
+        <item>4096</item>
+        <item>8192</item>
+    </string-array>
     <string name="audio_header">Audio</string>
     <string name="other">Other</string>
     <string name="audio_driver_pref">audio_driver</string>
+    <string name="audio_buffer_pref">audio_buffer</string>
     <string name="audio_device_pref">audio_device</string>
     <string name="buttons_pref">buttons</string>
     <string name="ui">User Interface</string>
@@ -33,6 +42,7 @@
     <string name="idle_ms_pref">idle_ms</string>
     <string name="idle_ms">Idle ms</string>
     <string name="idle_ms_summary">The delay amount in ms in the main loop, decrease value for faster operation, increase value if too much cpu usage</string>
+    <string name="clear_settings">Clear settings</string>
     <string-array name="sdl_gamecontroller_buttons">
         <item>A</item>
         <item>B</item>

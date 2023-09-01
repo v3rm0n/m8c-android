@@ -16,6 +16,14 @@
             app:title="@string/choose_audio_driver"
             app:useSimpleSummaryProvider="true" />
 
+        <ListPreference
+            app:defaultValue="4096"
+            app:entries="@array/audio_buffers"
+            app:entryValues="@array/audio_buffers"
+            app:key="@string/audio_buffer_pref"
+            app:title="@string/choose_audio_buffer"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/ui">
