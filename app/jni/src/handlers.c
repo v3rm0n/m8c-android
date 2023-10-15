@@ -1,7 +1,7 @@
 #include <SDL.h>
 #include <jni.h>
-#include <serial.h>
-#include "audio.h"
+#include "src/serial.h"
+#include "src/audio.h"
 
 int device_active = 0;
 
