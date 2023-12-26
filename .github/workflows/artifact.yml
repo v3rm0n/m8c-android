@@ -2,12 +2,20 @@ name: Build branch artifact
 
 on:
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch name'
+        required: true
+        type: string
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -21,14 +29,10 @@ jobs:
       - name: Git Submodule Update
         run: git submodule update --init
 
-      - name: Extract branch name
-        id: extract_branch
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-
       - name: Build M8Client
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: --build-cache -PversionName=${{ steps.extract_branch.outputs.branch }} build
+          arguments: --build-cache -PversionName=${{ inputs.branch }} build
 
       - name: Archive code coverage results
         uses: actions/upload-artifact@v3
