@@ -6,10 +6,10 @@
 int device_active = 0;
 
 JNIEXPORT void JNICALL
-Java_io_maido_m8client_M8SDLActivity_connect(JNIEnv *env, jobject thiz, jint fd) {
+Java_io_maido_m8client_M8SDLActivity_connect(JNIEnv *env, jobject thiz) {
     device_active = 1;
     SDL_Log("Connecting to the device");
-    init_serial_with_file_descriptor(fd);
+    init_serial_android(env);
 }
 
 JNIEXPORT void JNICALL

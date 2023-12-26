@@ -4,10 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
-import android.hardware.usb.UsbDevice
-import android.hardware.usb.UsbDeviceConnection
-import android.hardware.usb.UsbManager
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -15,7 +11,14 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import io.maido.m8client.M8Key.*
+import io.maido.m8client.M8Key.DOWN
+import io.maido.m8client.M8Key.EDIT
+import io.maido.m8client.M8Key.LEFT
+import io.maido.m8client.M8Key.OPTION
+import io.maido.m8client.M8Key.PLAY
+import io.maido.m8client.M8Key.RIGHT
+import io.maido.m8client.M8Key.SHIFT
+import io.maido.m8client.M8Key.UP
 import io.maido.m8client.settings.GeneralSettings
 import org.libsdl.app.SDLActivity
 
@@ -25,30 +28,19 @@ class M8SDLActivity : SDLActivity() {
     companion object {
         private const val TAG = "M8SDLActivity"
 
-        private val USB_DEVICE = M8SDLActivity::class.simpleName + ".USB_DEVICE"
 
-        fun startM8SDLActivity(context: Context, usbDevice: UsbDevice) {
+        fun startM8SDLActivity(context: Context) {
             val sdlActivity = Intent(context, M8SDLActivity::class.java)
-            sdlActivity.putExtra(USB_DEVICE, usbDevice)
             context.startActivity(sdlActivity)
         }
 
     }
 
-    private var usbConnection: UsbDeviceConnection? = null
-
-    @Suppress("Deprecation")
-    private fun getUsbDevice(): UsbDevice {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(USB_DEVICE, UsbDevice::class.java)
-        } else {
-            intent.getParcelableExtra(USB_DEVICE)
-        } ?: throw IllegalStateException("No device!")
-    }
 
     override fun onStart() {
         Log.d(TAG, "onStart()")
         super.onStart()
+        connect()
     }
 
     override fun onResume() {
@@ -59,15 +51,6 @@ class M8SDLActivity : SDLActivity() {
     override fun onDestroy() {
         Log.d(TAG, "onDestroy()")
         super.onDestroy()
-        usbConnection?.close()
-    }
-
-    private fun openUsbConnection() {
-        val usbManager = getSystemService(UsbManager::class.java)!!
-        usbConnection = usbManager.openDevice(getUsbDevice())?.also {
-            Log.d(TAG, "Setting file descriptor to ${it.fileDescriptor} ")
-            connect(it.fileDescriptor)
-        }
     }
 
     override fun onStop() {
@@ -81,7 +64,6 @@ class M8SDLActivity : SDLActivity() {
         val generalPreferences = GeneralSettings.getGeneralPreferences(this)
         hintAudioDriver(generalPreferences.audioDriver)
         lockOrientation(generalPreferences.lockOrientation)
-        openUsbConnection()
     }
 
     override fun onUnhandledMessage(command: Int, param: Any?): Boolean {
@@ -155,7 +137,7 @@ class M8SDLActivity : SDLActivity() {
         buttons.findViewById<View>(viewId)?.setOnTouchListener(M8TouchListener(key))
     }
 
-    private external fun connect(fileDescriptor: Int)
+    private external fun connect()
 
     private external fun hintAudioDriver(audioDriver: String?)
 
