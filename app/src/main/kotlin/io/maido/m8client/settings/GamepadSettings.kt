@@ -14,7 +14,7 @@ class GamepadSettings : PreferenceFragmentCompat() {
     companion object {
         fun getGamepadPreferences(context: Context): Map<M8GamepadButton, String?> {
             val preferences = getDefaultSharedPreferences(context)
-            return M8GamepadButton.values().associateWith { btn ->
+            return M8GamepadButton.entries.associateWith { btn ->
                 preferences.getString(btn.option, null)
             }
         }
@@ -30,7 +30,7 @@ class GamepadSettings : PreferenceFragmentCompat() {
         category.title = getString(R.string.gamepad_mappings)
         category.summary = getString(R.string.gamepad_mappings_summary)
         preferenceScreen.addPreference(category)
-        M8GamepadButton.values().map { btn ->
+        M8GamepadButton.entries.map { btn ->
             ListPreference(requireContext()).also { listPref ->
                 listPref.title = btn.name
                 listPref.key = btn.option

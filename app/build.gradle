@@ -5,15 +5,18 @@ plugins {
 
 android {
     namespace 'io.maido.m8client'
-    compileSdk 33
-    ndkVersion '25.2.9519653'
+    compileSdk 34
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     sourceSets.main.java.srcDirs += ['jni/SDL/android-project/app/src/main/java']
 
     defaultConfig {
         applicationId "io.maido.m8client"
         minSdk 26
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName property('versionName')
 
@@ -61,11 +64,11 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-    implementation 'androidx.preference:preference:1.2.1'
-    implementation 'androidx.fragment:fragment-ktx:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.preference:preference-ktx:1.2.1'
+    implementation 'androidx.fragment:fragment-ktx:1.6.2'
     implementation 'org.ini4j:ini4j:0.5.4'
 
     testImplementation 'junit:junit:4.13.2'
