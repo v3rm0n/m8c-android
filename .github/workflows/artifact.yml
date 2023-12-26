@@ -34,7 +34,7 @@ jobs:
         with:
           arguments: --build-cache -PversionName=${{ inputs.branch }} build
 
-      - name: Archive code coverage results
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: m8c.apk
