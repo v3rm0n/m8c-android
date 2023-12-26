@@ -1,0 +1,37 @@
+name: Build branch artifact
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Git Submodule Update
+        run: git submodule update --init
+
+      - name: Extract branch name
+        id: extract_branch
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+
+      - name: Build M8Client
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: --build-cache -PversionName=${{ steps.extract_branch.outputs.branch }} build
+
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: m8c.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
