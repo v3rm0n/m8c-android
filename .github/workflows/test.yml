@@ -37,6 +37,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ahmadnassri/action-dependabot-auto-merge@v2
+      - uses: v3rm0n/action-dependabot-auto-merge@digest
         with:
           github-token: ${{ secrets.mytoken }}
+      - uses: v3rm0n/action-dependabot-auto-merge@digest
+        with:
+          github-token: ${{ secrets.mytoken }}
+          target: digest
