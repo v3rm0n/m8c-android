@@ -11,8 +11,8 @@
     <string name="connect_your_m8_device">Connect your M8 device!</string>
     <string name="start">Start</string>
     <string name="show_onscreen_buttons">Show onscreen buttons</string>
-    <string name="choose_audio_device">Choose audio device</string>
-    <string name="choose_audio_driver">Choose audio driver</string>
+    <string name="choose_audio_device">Preferred audio device</string>
+    <string name="choose_audio_driver">Preferred audio driver</string>
     <string name="choose_audio_buffer">Choose audio buffer size</string>
     <string-array name="audio_drivers">
         <item>AAudio</item>
@@ -44,6 +44,10 @@
     <string name="idle_ms_summary">The delay amount in ms in the main loop, decrease value for faster operation, increase value if too much cpu usage</string>
     <string name="clear_settings">Clear settings</string>
     <string name="version_pref">version_pref</string>
+    <string name="new_button_layout">Use new horizontal button layout</string>
+    <string name="new_button_layout_pref">button_layout_pref</string>
+    <string name="new_button_layout_summary">Closer to the real device, uses portrait orientation</string>
+    <string name="show_onscreen_buttons_summary">Buttons will still be there, but invisible</string>
     <string-array name="sdl_gamecontroller_buttons">
         <item>A</item>
         <item>B</item>

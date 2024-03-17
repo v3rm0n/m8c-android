@@ -39,7 +39,14 @@
         <SwitchPreferenceCompat
             app:defaultValue="true"
             app:key="@string/buttons_pref"
+            app:summary="@string/show_onscreen_buttons_summary"
             app:title="@string/show_onscreen_buttons" />
+
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:key="@string/new_button_layout_pref"
+            app:summary="@string/new_button_layout_summary"
+            app:title="@string/new_button_layout" />
 
         <SwitchPreferenceCompat
             app:defaultValue="false"

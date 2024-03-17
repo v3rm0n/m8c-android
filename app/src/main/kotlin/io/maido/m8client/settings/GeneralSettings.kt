@@ -4,11 +4,15 @@ import android.content.Context
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Bundle
+import android.util.Log
+import android.view.MenuItem
 import androidx.core.content.getSystemService
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
+import androidx.preference.SwitchPreferenceCompat
 import io.maido.m8client.BuildConfig
 import io.maido.m8client.R
 
@@ -27,9 +31,12 @@ class GeneralSettings : PreferenceFragmentCompat() {
             val idleMs = preferences.getString(context.getString(R.string.idle_ms_pref), "0")!!
             val audioBuffer =
                 preferences.getString(context.getString(R.string.audio_buffer_pref), "4096")!!
+            val useNewLayout =
+                preferences.getBoolean(context.getString(R.string.new_button_layout_pref), false)
             return GeneralPreferences(
                 showButtons,
                 lockOrientation,
+                useNewLayout,
                 audioDevice,
                 audioDriver,
                 audioBuffer.toInt(),
@@ -43,6 +50,23 @@ class GeneralSettings : PreferenceFragmentCompat() {
         addAudioDevicePreferenceValues()
         val version: EditTextPreference? = findPreference(getString(R.string.version_pref))
         version?.title = "Version ${BuildConfig.VERSION_NAME}"
+        val pref =
+            findPreference<SwitchPreferenceCompat>(getString(R.string.new_button_layout_pref))!!
+        setOrientationLockValue(pref.isChecked)
+        pref.onPreferenceChangeListener =
+            Preference.OnPreferenceChangeListener { _, newValue ->
+                setOrientationLockValue(newValue == true)
+                return@OnPreferenceChangeListener true
+            }
+    }
+
+    private fun setOrientationLockValue(newLayoutEnabled: Boolean) {
+        findPreference<SwitchPreferenceCompat>(getString(R.string.lock_orientation_pref))?.also {
+            it.isEnabled = !newLayoutEnabled
+            if (newLayoutEnabled) {
+                it.isChecked = false
+            }
+        }
     }
 
     private fun addAudioDevicePreferenceValues() {
@@ -87,6 +111,7 @@ class GeneralSettings : PreferenceFragmentCompat() {
 data class GeneralPreferences(
     val showButtons: Boolean = true,
     val lockOrientation: Boolean = false,
+    val useNewLayout: Boolean = false,
     val audioDevice: Int = 0,
     val audioDriver: String? = null,
     val audioBuffer: Int = 4096,

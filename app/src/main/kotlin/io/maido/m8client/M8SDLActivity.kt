@@ -80,7 +80,10 @@ class M8SDLActivity : SDLActivity() {
         super.onCreate(savedInstanceState)
         val generalPreferences = GeneralSettings.getGeneralPreferences(this)
         hintAudioDriver(generalPreferences.audioDriver)
-        lockOrientation(generalPreferences.lockOrientation)
+        lockOrientation(
+            if (generalPreferences.useNewLayout) "Portrait PortraitUpsideDown"
+            else if (generalPreferences.lockOrientation) "LandscapeLeft LandscapeRight" else null
+        )
         openUsbConnection()
     }
 
@@ -118,7 +121,9 @@ class M8SDLActivity : SDLActivity() {
         val m8Layout = layoutInflater.inflate(R.layout.m8, mainLayout, true)
         val generalPreferences = GeneralSettings.getGeneralPreferences(this)
         if (generalPreferences.showButtons) {
-            val buttons = layoutInflater.inflate(R.layout.buttons, mainLayout, false)
+            val layout =
+                if (generalPreferences.useNewLayout) R.layout.buttons_alt else R.layout.buttons
+            val buttons = layoutInflater.inflate(layout, mainLayout, false)
             setButtonListeners(buttons)
             mainLayout.addView(buttons)
         } else {
@@ -159,6 +164,6 @@ class M8SDLActivity : SDLActivity() {
 
     private external fun hintAudioDriver(audioDriver: String?)
 
-    private external fun lockOrientation(lock: Boolean)
+    private external fun lockOrientation(orientation: String?)
 
 }
