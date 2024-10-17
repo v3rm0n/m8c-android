@@ -49,6 +49,15 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".M8SDLActivity"
+            android:exported="true"
+            android:alwaysRetainTaskState="true"
+            android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
+            android:launchMode="singleInstance"
+            android:preferMinimalPostProcessing="true"
+            android:screenOrientation="fullSensor" >
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
@@ -56,13 +65,6 @@
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
         </activity>
-        <activity
-            android:name=".M8SDLActivity"
-            android:alwaysRetainTaskState="true"
-            android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
-            android:launchMode="singleInstance"
-            android:preferMinimalPostProcessing="true"
-            android:screenOrientation="fullSensor" />
     </application>
 
 </manifest>

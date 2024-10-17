@@ -1,12 +1,17 @@
 package io.maido.m8client
 
+import android.app.PendingIntent.FLAG_IMMUTABLE
+import android.app.PendingIntent.getBroadcast
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.Configuration
 import android.graphics.Color
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
+import android.hardware.usb.UsbManager.ACTION_USB_DEVICE_DETACHED
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -16,6 +21,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import io.maido.m8client.M8Key.*
+import io.maido.m8client.M8Util.isM8
 import io.maido.m8client.settings.GeneralSettings
 import org.libsdl.app.SDLActivity
 
@@ -24,31 +30,58 @@ class M8SDLActivity : SDLActivity() {
 
     companion object {
         private const val TAG = "M8SDLActivity"
+        private const val ACTION_USB_PERMISSION = "io.maido.m8client.USB_PERMISSION"
 
-        private val USB_DEVICE = M8SDLActivity::class.simpleName + ".USB_DEVICE"
-
-        fun startM8SDLActivity(context: Context, usbDevice: UsbDevice) {
+        fun startM8SDLActivity(context: Context) {
             val sdlActivity = Intent(context, M8SDLActivity::class.java)
-            sdlActivity.putExtra(USB_DEVICE, usbDevice)
             context.startActivity(sdlActivity)
         }
 
     }
 
-    private var usbConnection: UsbDeviceConnection? = null
-
-    @Suppress("Deprecation")
-    private fun getUsbDevice(): UsbDevice {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(USB_DEVICE, UsbDevice::class.java)
-        } else {
-            intent.getParcelableExtra(USB_DEVICE)
-        } ?: throw IllegalStateException("No device!")
+    private val usbReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.action
+            if (ACTION_USB_PERMISSION == action) {
+                synchronized(this) {
+                    val device = getExtraDevice(intent)
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        if (device != null && isM8(device)) {
+                            connectToM8(device)
+                        } else {
+                            Log.d(TAG, "Device was not M8")
+                        }
+                    } else {
+                        Log.d(TAG, "Permission denied for device $device")
+                    }
+                }
+            } else if (ACTION_USB_DEVICE_DETACHED == action) {
+                Log.d(TAG, "Device was detached!")
+            }
+        }
     }
 
+    @Suppress("Deprecation")
+    private fun getExtraDevice(intent: Intent): UsbDevice? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
+        } else {
+            intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
+        }
+    }
+
+    private var usbConnection: UsbDeviceConnection? = null
+
     override fun onStart() {
-        Log.d(TAG, "onStart()")
+        Log.i(TAG, "Searching for an M8 device")
         super.onStart()
+        val usbManager = getSystemService(UsbManager::class.java)
+        for (device in usbManager.deviceList.values) {
+            if (isM8(device)) {
+                connectToM8WithPermission(usbManager, device)
+                break
+            }
+        }
     }
 
     override fun onResume() {
@@ -59,15 +92,8 @@ class M8SDLActivity : SDLActivity() {
     override fun onDestroy() {
         Log.d(TAG, "onDestroy()")
         super.onDestroy()
+        unregisterReceiver(usbReceiver)
         usbConnection?.close()
-    }
-
-    private fun openUsbConnection() {
-        val usbManager = getSystemService(UsbManager::class.java)!!
-        usbConnection = usbManager.openDevice(getUsbDevice())?.also {
-            Log.d(TAG, "Setting file descriptor to ${it.fileDescriptor} ")
-            connect(it.fileDescriptor)
-        }
     }
 
     override fun onStop() {
@@ -84,7 +110,43 @@ class M8SDLActivity : SDLActivity() {
             if (generalPreferences.useNewLayout) "Portrait PortraitUpsideDown"
             else if (generalPreferences.lockOrientation) "LandscapeLeft LandscapeRight" else null
         )
-        openUsbConnection()
+        registerReceiver(usbReceiver, IntentFilter(ACTION_USB_DEVICE_DETACHED))
+    }
+
+    private fun connectToM8(device: UsbDevice) {
+        val usbManager = getSystemService(UsbManager::class.java)!!
+        usbConnection = usbManager.openDevice(device)?.also {
+            Log.d(TAG, "Setting file descriptor to ${it.fileDescriptor} ")
+            connect(it.fileDescriptor)
+        }
+    }
+
+    private fun requestM8Permission(usbManager: UsbManager, usbDevice: UsbDevice) {
+        val intent = Intent(ACTION_USB_PERMISSION)
+        val permissionIntent = getBroadcast(this, 0, intent, FLAG_IMMUTABLE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(
+                usbReceiver,
+                IntentFilter(ACTION_USB_PERMISSION),
+                RECEIVER_NOT_EXPORTED
+            )
+        } else {
+            registerReceiver(
+                usbReceiver,
+                IntentFilter(ACTION_USB_PERMISSION)
+            )
+        }
+        usbManager.requestPermission(usbDevice, permissionIntent)
+    }
+
+    private fun connectToM8WithPermission(usbManager: UsbManager, usbDevice: UsbDevice) {
+        if (usbManager.hasPermission(usbDevice)) {
+            Log.i(TAG, "Permission granted!")
+            connectToM8(usbDevice)
+        } else {
+            Log.i(TAG, "Requesting USB device permission")
+            requestM8Permission(usbManager, usbDevice)
+        }
     }
 
     override fun onUnhandledMessage(command: Int, param: Any?): Boolean {
