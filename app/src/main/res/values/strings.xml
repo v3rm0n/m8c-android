@@ -5,9 +5,13 @@
     <string name="right">Right</string>
     <string name="down">Down</string>
     <string name="option">Option</string>
+    <string name="option_char">O</string>
     <string name="edit">Edit</string>
+    <string name="edit_char">E</string>
     <string name="play">Play</string>
+    <string name="play_char">P</string>
     <string name="shift">Shift</string>
+    <string name="shift_char">S</string>
     <string name="connect_your_m8_device">Connect your M8 device!</string>
     <string name="start">Start</string>
     <string name="show_onscreen_buttons">Show onscreen buttons</string>

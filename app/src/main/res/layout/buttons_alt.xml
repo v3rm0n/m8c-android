@@ -13,25 +13,50 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingVertical="20dp"
-        android:gravity="end">
+        android:gravity="end"
+        android:paddingVertical="20dp">
 
-        <ImageButton
-            android:id="@+id/option"
+        <FrameLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@null"
-            android:contentDescription="@string/option"
-            android:src="@drawable/button" />
+            android:layout_height="wrap_content">
 
-        <ImageButton
-            android:id="@+id/edit"
+            <ImageButton
+                android:id="@+id/option"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:contentDescription="@string/option"
+                android:src="@drawable/button" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="O"
+                android:textSize="14sp" />
+        </FrameLayout>
+
+
+        <FrameLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@null"
-            android:contentDescription="@string/edit"
-            android:paddingHorizontal="20dp"
-            android:src="@drawable/button" />
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:id="@+id/edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:contentDescription="@string/edit"
+                android:paddingHorizontal="20dp"
+                android:src="@drawable/button" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="E"
+                android:textSize="14sp" />
+        </FrameLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -78,33 +103,57 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:background="@null"
-            android:paddingHorizontal="20dp"
             android:contentDescription="@string/right"
+            android:paddingHorizontal="20dp"
             android:src="@drawable/button" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingVertical="20dp"
-        android:gravity="end|bottom">
+        android:gravity="end|bottom"
+        android:paddingVertical="20dp">
 
-        <ImageButton
-            android:id="@+id/shift"
+        <FrameLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@null"
-            android:contentDescription="@string/shift"
-            android:src="@drawable/button" />
+            android:layout_height="wrap_content">
 
-        <ImageButton
-            android:id="@+id/play"
+            <ImageButton
+                android:id="@+id/shift"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:contentDescription="@string/shift"
+                android:src="@drawable/button" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="S"
+                android:textSize="14sp" />
+        </FrameLayout>
+
+        <FrameLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@null"
-            android:contentDescription="@string/play"
-            android:paddingHorizontal="20dp"
-            android:src="@drawable/button" />
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:id="@+id/play"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:contentDescription="@string/play"
+                android:paddingHorizontal="20dp"
+                android:src="@drawable/button" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="P"
+                android:textSize="14sp" />
+        </FrameLayout>
     </LinearLayout>
 
 </LinearLayout>
