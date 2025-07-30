@@ -19,6 +19,19 @@
         app:layout_constraintTop_toTopOf="parent"
         app:title="M8C Settings" />
 
+    <Button
+        android:id="@+id/startButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:minWidth="100dp"
+        android:text="@string/start"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/settings_container"
+        app:layout_constraintVertical_bias="1" />
+
     <ScrollView
         android:id="@+id/settings_scroll"
         android:layout_width="match_parent"
@@ -41,18 +54,6 @@
 
             </androidx.fragment.app.FragmentContainerView>
 
-            <Button
-                android:id="@+id/startButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:minWidth="100dp"
-                android:text="@string/start"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/settings_container"
-                app:layout_constraintVertical_bias="1" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
