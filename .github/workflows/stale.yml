@@ -11,7 +11,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@v10
         with:
           stale-issue-message: 'Issue is marked as stale since there has been no activity for two weeks. It will be automatically closed in 5 days.'
           days-before-stale: 14
