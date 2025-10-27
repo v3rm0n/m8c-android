@@ -35,7 +35,7 @@ jobs:
           arguments: --build-cache -PversionName=${{ inputs.branch }} build
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v5
         with:
           name: m8c.apk
           path: app/build/outputs/apk/debug/app-debug.apk
