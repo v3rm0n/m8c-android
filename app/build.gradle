@@ -55,6 +55,31 @@ android {
     }
 }
 
+tasks.register('applySDLPatches') {
+    def sdlDir = file('jni/SDL')
+    def patches = fileTree('jni/patches') { include '*.patch' }.files.toList()
+    doLast {
+        patches.each { patch ->
+            def check = ['git', 'apply', '--check', patch.absolutePath].execute(null, sdlDir)
+            check.waitFor()
+            if (check.exitValue() == 0) {
+                def apply = ['git', 'apply', patch.absolutePath].execute(null, sdlDir)
+                apply.waitFor()
+                if (apply.exitValue() != 0) {
+                    throw new GradleException("Failed to apply patch: ${patch.name}")
+                }
+                logger.lifecycle("Applied SDL patch: ${patch.name}")
+            }
+        }
+    }
+}
+
+tasks.configureEach { task ->
+    if (task.name.startsWith('externalNativeBuild') || task.name.startsWith('buildNdkBuild')) {
+        task.dependsOn 'applySDLPatches'
+    }
+}
+
 dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.7.1'
