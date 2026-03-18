@@ -1,6 +1,5 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
 }
 
 android {
@@ -33,12 +32,8 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-    }
-    applicationVariants.all { variant ->
-        tasks["merge${variant.name.capitalize()}Assets"]
-                .dependsOn("externalNativeBuild${variant.name.capitalize()}")
     }
     if (!project.hasProperty('EXCLUDE_NATIVE_LIBS')) {
         sourceSets.main {
@@ -55,11 +50,33 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_9
         targetCompatibility JavaVersion.VERSION_1_9
     }
-    kotlinOptions {
-        jvmTarget = '9'
-    }
     lint {
         abortOnError false
+    }
+}
+
+tasks.register('applySDLPatches') {
+    def sdlDir = file('jni/SDL')
+    def patches = fileTree('jni/patches') { include '*.patch' }.files.toList()
+    doLast {
+        patches.each { patch ->
+            def check = ['git', 'apply', '--check', patch.absolutePath].execute(null, sdlDir)
+            check.waitFor()
+            if (check.exitValue() == 0) {
+                def apply = ['git', 'apply', patch.absolutePath].execute(null, sdlDir)
+                apply.waitFor()
+                if (apply.exitValue() != 0) {
+                    throw new GradleException("Failed to apply patch: ${patch.name}")
+                }
+                logger.lifecycle("Applied SDL patch: ${patch.name}")
+            }
+        }
+    }
+}
+
+tasks.configureEach { task ->
+    if (task.name.startsWith('externalNativeBuild') || task.name.startsWith('buildNdkBuild')) {
+        task.dependsOn 'applySDLPatches'
     }
 }
 

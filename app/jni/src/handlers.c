@@ -1,7 +1,8 @@
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <jni.h>
-#include "src/serial.h"
-#include "src/audio.h"
+#include "src/backends/m8.h"
+
+extern int init_serial_with_file_descriptor(int file_descriptor);
 
 int device_active = 0;
 
@@ -17,7 +18,7 @@ Java_io_maido_m8client_M8TouchListener_00024Companion_sendClickEvent(JNIEnv *env
                                                                      jchar event) {
     if (device_active) {
         SDL_Log("Sending message to M8");
-        send_msg_controller(event);
+        m8_send_msg_controller(event);
     }
 }
 
@@ -28,14 +29,14 @@ Java_io_maido_m8client_M8SDLActivity_hintAudioDriver(JNIEnv *env, jobject thiz,
         const char *path;
         path = (*env)->GetStringUTFChars(env, audio_driver, NULL);
         SDL_Log("Setting audio driver to %s", path);
-        SDL_SetHint(SDL_HINT_AUDIODRIVER, path);
+        SDL_SetHint(SDL_HINT_AUDIO_DRIVER, path);
     }
 }
 
 JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8TouchListener_00024Companion_resetScreen(JNIEnv *env, jobject thiz) {
     if (device_active) {
-        enable_and_reset_display();
+        m8_reset_display();
     }
 }
 
@@ -44,9 +45,9 @@ Java_io_maido_m8client_M8TouchListener_00024Companion_exit(JNIEnv *env, jobject 
     device_active = 0;
     SDL_Log("Sending Alt+F4 to M8");
     SDL_Event sdlevent = {};
-    sdlevent.type = SDL_KEYDOWN;
-    sdlevent.key.keysym.sym = SDLK_F4;
-    sdlevent.key.keysym.mod = KMOD_ALT;
+    sdlevent.type = SDL_EVENT_KEY_DOWN;
+    sdlevent.key.key = SDLK_F4;
+    sdlevent.key.mod = SDL_KMOD_ALT;
     SDL_PushEvent(&sdlevent);
 }
 

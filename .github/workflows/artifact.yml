@@ -29,13 +29,16 @@ jobs:
       - name: Git Submodule Update
         run: git submodule update --init
 
-      - name: Build M8Client
-        uses: gradle/gradle-build-action@v3
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
-          arguments: --build-cache -PversionName=${{ inputs.branch }} build
+          validate-wrappers: false
+
+      - name: Build M8Client
+        run: ./gradlew --build-cache -PversionName=${{ inputs.branch }} build
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: m8c.apk
           path: app/build/outputs/apk/debug/app-debug.apk

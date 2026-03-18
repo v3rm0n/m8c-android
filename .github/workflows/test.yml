@@ -24,10 +24,13 @@ jobs:
     - name: Git Submodule Update
       run: git submodule update --init
 
-    - name: Build M8Client
-      uses: gradle/gradle-build-action@v3
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
       with:
-        arguments: --build-cache check
+        validate-wrappers: false
+
+    - name: Build M8Client
+      run: ./gradlew --build-cache check
     - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action@v2
       if: always()

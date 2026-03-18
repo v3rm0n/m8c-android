@@ -20,7 +20,6 @@
     <string name="choose_audio_buffer">Choose audio buffer size</string>
     <string-array name="audio_drivers">
         <item>AAudio</item>
-        <item>android</item>
         <item>openslES</item>
     </string-array>
     <string-array name="audio_buffers">

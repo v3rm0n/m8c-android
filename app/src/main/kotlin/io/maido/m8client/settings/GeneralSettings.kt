@@ -25,6 +25,7 @@ class GeneralSettings : PreferenceFragmentCompat() {
                 preferences.getString(context.getString(R.string.audio_device_pref), "0")!!.toInt()
             val audioDriver =
                 preferences.getString(context.getString(R.string.audio_driver_pref), "AAudio")
+                    .let { if (it == "android") "AAudio" else it }
             val showButtons = preferences.getBoolean(context.getString(R.string.buttons_pref), true)
             val lockOrientation =
                 preferences.getBoolean(context.getString(R.string.lock_orientation_pref), false)
