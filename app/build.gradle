@@ -1,6 +1,5 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
 }
 
 android {
@@ -33,12 +32,8 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-    }
-    applicationVariants.all { variant ->
-        tasks["merge${variant.name.capitalize()}Assets"]
-                .dependsOn("externalNativeBuild${variant.name.capitalize()}")
     }
     if (!project.hasProperty('EXCLUDE_NATIVE_LIBS')) {
         sourceSets.main {
@@ -54,9 +49,6 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_9
         targetCompatibility JavaVersion.VERSION_1_9
-    }
-    kotlinOptions {
-        jvmTarget = '9'
     }
     lint {
         abortOnError false
