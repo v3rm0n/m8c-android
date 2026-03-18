@@ -27,10 +27,11 @@ jobs:
       - name: Git Submodule Update
         run: git submodule update --init
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Build M8Client
-        uses: gradle/gradle-build-action@v3
-        with:
-          arguments: --build-cache -PversionName=${{ steps.vars.outputs.tag }} build
+        run: ./gradlew --build-cache -PversionName=${{ steps.vars.outputs.tag }} build
 
       - name: Release
         uses: softprops/action-gh-release@v2
