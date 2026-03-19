@@ -79,6 +79,10 @@ class M8SDLActivity : SDLActivity() {
     override fun onStart() {
         Log.i(TAG, "Searching for an M8 device")
         super.onStart()
+        if (usbConnection != null) {
+            Log.d(TAG, "Already connected to M8, skipping reconnect")
+            return
+        }
         val usbManager = getSystemService(UsbManager::class.java)
         for (device in usbManager.deviceList.values) {
             if (isM8(device)) {
