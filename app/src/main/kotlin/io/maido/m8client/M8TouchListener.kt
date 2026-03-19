@@ -27,7 +27,7 @@ internal class M8TouchListener(
 
         external fun resetScreen()
 
-        private external fun exit()
+        internal external fun exit()
 
         fun handleTouch(key: M8Key, action: Int): Boolean {
             when (action) {
@@ -41,6 +41,8 @@ internal class M8TouchListener(
 
                         exit -> {
                             Log.d(TAG, "Sending exit")
+                            keyState = 0
+                            sendClickEvent(0.toChar())
                             exit()
                         }
 
