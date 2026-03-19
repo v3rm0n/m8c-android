@@ -56,7 +56,11 @@ class M8SDLActivity : SDLActivity() {
                     }
                 }
             } else if (ACTION_USB_DEVICE_DETACHED == action) {
-                Log.d(TAG, "Device was detached!")
+                val device = getExtraDevice(intent)
+                if (device != null && isM8(device)) {
+                    Log.i(TAG, "M8 detached, exiting")
+                    M8TouchListener.exit()
+                }
             }
         }
     }
