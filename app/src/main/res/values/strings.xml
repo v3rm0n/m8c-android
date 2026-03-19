@@ -29,6 +29,9 @@
         <item>4096</item>
         <item>8192</item>
     </string-array>
+    <string name="use_default_audio_pref">use_default_audio</string>
+    <string name="use_default_audio">Use default audio device</string>
+    <string name="use_default_audio_summary">Let the system decide; follows headphones, Bluetooth, etc.</string>
     <string name="audio_header">Audio</string>
     <string name="other">Other</string>
     <string name="audio_driver_pref">audio_driver</string>

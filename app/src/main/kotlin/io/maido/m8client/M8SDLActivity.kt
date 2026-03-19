@@ -114,6 +114,9 @@ class M8SDLActivity : SDLActivity() {
         super.onCreate(savedInstanceState)
         val generalPreferences = GeneralSettings.getGeneralPreferences(this)
         hintAudioDriver(generalPreferences.audioDriver)
+        if (generalPreferences.useDefaultAudio) {
+            hintAudioOutputDevice(GeneralSettings.getBestOutputDeviceId(this))
+        }
         lockOrientation(
             if (generalPreferences.useNewLayout) "Portrait PortraitUpsideDown"
             else if (generalPreferences.lockOrientation) "LandscapeLeft LandscapeRight" else null
@@ -233,6 +236,8 @@ class M8SDLActivity : SDLActivity() {
     private external fun connect(fileDescriptor: Int)
 
     private external fun hintAudioDriver(audioDriver: String?)
+
+    private external fun hintAudioOutputDevice(deviceId: Int)
 
     private external fun lockOrientation(orientation: String?)
 

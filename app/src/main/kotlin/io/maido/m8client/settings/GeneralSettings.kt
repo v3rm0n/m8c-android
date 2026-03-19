@@ -5,7 +5,6 @@ import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Bundle
 import android.util.Log
-import android.view.MenuItem
 import androidx.core.content.getSystemService
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
@@ -19,8 +18,32 @@ import io.maido.m8client.R
 class GeneralSettings : PreferenceFragmentCompat() {
 
     companion object {
+        fun getBestOutputDeviceId(context: Context): Int {
+            val audioManager = context.getSystemService<AudioManager>() ?: return 0
+            val devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS) ?: return 0
+            val candidates = devices.filter { d ->
+                d.isSink &&
+                d.type != AudioDeviceInfo.TYPE_BUILTIN_EARPIECE &&
+                !(d.type == AudioDeviceInfo.TYPE_USB_DEVICE &&
+                  d.productName.contains("M8", ignoreCase = true))
+            }
+            return candidates.firstOrNull {
+                it.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
+                it.type == AudioDeviceInfo.TYPE_WIRED_HEADSET
+            }?.id
+                ?: candidates.firstOrNull {
+                    it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+                    it.type == AudioDeviceInfo.TYPE_BLE_HEADSET
+                }?.id
+                ?: candidates.firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }?.id
+                ?: candidates.firstOrNull()?.id
+                ?: 0
+        }
+
         fun getGeneralPreferences(context: Context): GeneralPreferences {
             val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+            val useDefaultAudio =
+                preferences.getBoolean(context.getString(R.string.use_default_audio_pref), true)
             val audioDevice =
                 preferences.getString(context.getString(R.string.audio_device_pref), "0")!!.toInt()
             val audioDriver =
@@ -38,6 +61,7 @@ class GeneralSettings : PreferenceFragmentCompat() {
                 showButtons,
                 lockOrientation,
                 useNewLayout,
+                useDefaultAudio,
                 audioDevice,
                 audioDriver,
                 audioBuffer.toInt(),
@@ -51,6 +75,16 @@ class GeneralSettings : PreferenceFragmentCompat() {
         addAudioDevicePreferenceValues()
         val version: EditTextPreference? = findPreference(getString(R.string.version_pref))
         version?.title = "Version ${BuildConfig.VERSION_NAME}"
+
+        val useDefaultAudioPref =
+            findPreference<SwitchPreferenceCompat>(getString(R.string.use_default_audio_pref))!!
+        setAudioSelectionEnabled(!useDefaultAudioPref.isChecked)
+        useDefaultAudioPref.onPreferenceChangeListener =
+            Preference.OnPreferenceChangeListener { _, newValue ->
+                setAudioSelectionEnabled(newValue != true)
+                return@OnPreferenceChangeListener true
+            }
+
         val pref =
             findPreference<SwitchPreferenceCompat>(getString(R.string.new_button_layout_pref))!!
         setOrientationLockValue(pref.isChecked)
@@ -59,6 +93,11 @@ class GeneralSettings : PreferenceFragmentCompat() {
                 setOrientationLockValue(newValue == true)
                 return@OnPreferenceChangeListener true
             }
+    }
+
+    private fun setAudioSelectionEnabled(enabled: Boolean) {
+        findPreference<ListPreference>(getString(R.string.audio_device_pref))?.isEnabled = enabled
+        findPreference<ListPreference>(getString(R.string.audio_driver_pref))?.isEnabled = enabled
     }
 
     private fun setOrientationLockValue(newLayoutEnabled: Boolean) {
@@ -113,6 +152,7 @@ data class GeneralPreferences(
     val showButtons: Boolean = true,
     val lockOrientation: Boolean = false,
     val useNewLayout: Boolean = false,
+    val useDefaultAudio: Boolean = true,
     val audioDevice: Int = 0,
     val audioDriver: String? = null,
     val audioBuffer: Int = 4096,

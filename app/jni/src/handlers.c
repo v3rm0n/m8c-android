@@ -34,6 +34,17 @@ Java_io_maido_m8client_M8SDLActivity_hintAudioDriver(JNIEnv *env, jobject thiz,
 }
 
 JNIEXPORT void JNICALL
+Java_io_maido_m8client_M8SDLActivity_hintAudioOutputDevice(JNIEnv *env, jobject thiz,
+                                                           jint device_id) {
+    if (device_id > 0) {
+        char buf[32];
+        SDL_snprintf(buf, sizeof(buf), "%d", device_id);
+        SDL_Log("Setting audio output device id to %s", buf);
+        SDL_SetHint("SDL_ANDROID_AUDIO_DEVICE_ID", buf);
+    }
+}
+
+JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8TouchListener_00024Companion_resetScreen(JNIEnv *env, jobject thiz) {
     if (device_active) {
         m8_reset_display();

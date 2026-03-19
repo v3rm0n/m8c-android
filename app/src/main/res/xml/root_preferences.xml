@@ -10,6 +10,12 @@
 
     <PreferenceCategory app:title="@string/audio_header">
 
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:key="@string/use_default_audio_pref"
+            app:title="@string/use_default_audio"
+            app:summary="@string/use_default_audio_summary" />
+
         <ListPreference
             app:defaultValue="0"
             app:key="@string/audio_device_pref"

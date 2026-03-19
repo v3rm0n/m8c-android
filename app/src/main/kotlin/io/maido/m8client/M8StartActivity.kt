@@ -58,7 +58,9 @@ class M8StartActivity : AppCompatActivity(R.layout.settings),
         val generalPreferences = GeneralSettings.getGeneralPreferences(this)
         configuration.copyConfiguration(
             GamepadSettings.getGamepadPreferences(this) + mapOf(
-                M8AudioOption.DEVICE_NAME to generalPreferences.audioDevice.toString(),
+                M8AudioOption.DEVICE_NAME to
+                    if (generalPreferences.useDefaultAudio) null
+                    else generalPreferences.audioDevice.toString(),
                 M8GraphicsOption.IDLE_MS to generalPreferences.idleMs.toString(),
                 M8AudioOption.BUFFER_SIZE to generalPreferences.audioBuffer.toString(),
             )
