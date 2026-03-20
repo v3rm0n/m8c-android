@@ -72,6 +72,14 @@ Java_io_maido_m8client_M8TouchListener_00024Companion_exit(JNIEnv *env, jobject 
 }
 
 JNIEXPORT void JNICALL
+Java_io_maido_m8client_M8SDLActivity_sendMidiCC(JNIEnv *env, jobject thiz,
+                                                jint channel, jint cc_num, jint value) {
+    if (device_active) {
+        m8_send_midi_cc((uint8_t)channel, (uint8_t)cc_num, (uint8_t)value);
+    }
+}
+
+JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8SDLActivity_hintAudioInputDevice(JNIEnv *env, jobject thiz,
                                                            jint device_id) {
     if (device_id > 0) {

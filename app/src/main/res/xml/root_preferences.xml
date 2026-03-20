@@ -81,6 +81,29 @@
             app:title="@string/gamepad_mappings" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/midi_header">
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:key="@string/touch_cc_enabled_pref"
+            app:title="@string/touch_cc_enabled"
+            app:summary="@string/touch_cc_enabled_summary" />
+        <EditTextPreference
+            app:defaultValue="1"
+            app:key="@string/touch_cc_channel_pref"
+            app:title="@string/touch_cc_channel"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:defaultValue="1"
+            app:key="@string/touch_cc_x_pref"
+            app:title="@string/touch_cc_x"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:defaultValue="2"
+            app:key="@string/touch_cc_y_pref"
+            app:title="@string/touch_cc_y"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/advanced">
         <EditTextPreference
             app:defaultValue="0"

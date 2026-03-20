@@ -59,6 +59,16 @@
     <string name="new_button_layout_pref">button_layout_pref</string>
     <string name="new_button_layout_summary">Closer to the real device, uses portrait orientation</string>
     <string name="show_onscreen_buttons_summary">Buttons will still be there, but invisible</string>
+    <string name="midi_header">MIDI</string>
+    <string name="touch_cc_enabled_pref">touch_cc_enabled</string>
+    <string name="touch_cc_enabled">Touch CC</string>
+    <string name="touch_cc_enabled_summary">Send MIDI CC to M8 when touching the screen. X (up) and Y (right) map to separate CCs.</string>
+    <string name="touch_cc_channel_pref">touch_cc_channel</string>
+    <string name="touch_cc_channel">MIDI channel</string>
+    <string name="touch_cc_x_pref">touch_cc_x</string>
+    <string name="touch_cc_x">X (up/down) CC number</string>
+    <string name="touch_cc_y_pref">touch_cc_y</string>
+    <string name="touch_cc_y">Y (left/right) CC number</string>
     <string-array name="sdl_gamecontroller_buttons">
         <item>A</item>
         <item>B</item>

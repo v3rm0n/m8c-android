@@ -80,6 +80,10 @@ class GeneralSettings : PreferenceFragmentCompat() {
                 preferences.getString(context.getString(R.string.audio_buffer_pref), "4096")!!
             val useNewLayout =
                 preferences.getBoolean(context.getString(R.string.new_button_layout_pref), false)
+            val touchCcEnabled = preferences.getBoolean(context.getString(R.string.touch_cc_enabled_pref), false)
+            val touchCcChannel = preferences.getString(context.getString(R.string.touch_cc_channel_pref), "1")!!.toInt()
+            val touchCcX = preferences.getString(context.getString(R.string.touch_cc_x_pref), "1")!!.toInt()
+            val touchCcY = preferences.getString(context.getString(R.string.touch_cc_y_pref), "2")!!.toInt()
             return GeneralPreferences(
                 showButtons,
                 lockOrientation,
@@ -90,7 +94,11 @@ class GeneralSettings : PreferenceFragmentCompat() {
                 audioInputDevice,
                 audioDriver,
                 audioBuffer.toInt(),
-                idleMs.toInt()
+                idleMs.toInt(),
+                touchCcEnabled,
+                touchCcChannel,
+                touchCcX,
+                touchCcY
             )
         }
     }
@@ -127,6 +135,15 @@ class GeneralSettings : PreferenceFragmentCompat() {
                 setOrientationLockValue(newValue == true)
                 return@OnPreferenceChangeListener true
             }
+
+        val touchCcPref =
+            findPreference<SwitchPreferenceCompat>(getString(R.string.touch_cc_enabled_pref))!!
+        setTouchCcSelectionEnabled(touchCcPref.isChecked)
+        touchCcPref.onPreferenceChangeListener =
+            Preference.OnPreferenceChangeListener { _, newValue ->
+                setTouchCcSelectionEnabled(newValue == true)
+                return@OnPreferenceChangeListener true
+            }
     }
 
     private fun setAudioOutputSelectionEnabled(enabled: Boolean) {
@@ -136,6 +153,12 @@ class GeneralSettings : PreferenceFragmentCompat() {
 
     private fun setAudioInputSelectionEnabled(enabled: Boolean) {
         findPreference<ListPreference>(getString(R.string.audio_input_device_pref))?.isEnabled = enabled
+    }
+
+    private fun setTouchCcSelectionEnabled(enabled: Boolean) {
+        findPreference<EditTextPreference>(getString(R.string.touch_cc_channel_pref))?.isEnabled = enabled
+        findPreference<EditTextPreference>(getString(R.string.touch_cc_x_pref))?.isEnabled = enabled
+        findPreference<EditTextPreference>(getString(R.string.touch_cc_y_pref))?.isEnabled = enabled
     }
 
     private fun setOrientationLockValue(newLayoutEnabled: Boolean) {
@@ -209,5 +232,9 @@ data class GeneralPreferences(
     val audioInputDevice: Int = 0,
     val audioDriver: String? = null,
     val audioBuffer: Int = 4096,
-    val idleMs: Int = 0
+    val idleMs: Int = 0,
+    val touchCcEnabled: Boolean = false,
+    val touchCcChannel: Int = 1,
+    val touchCcX: Int = 1,
+    val touchCcY: Int = 2
 )

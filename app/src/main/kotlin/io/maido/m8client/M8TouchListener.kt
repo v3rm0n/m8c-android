@@ -27,7 +27,15 @@ internal class M8TouchListener(
 
         external fun resetScreen()
 
-        internal external fun exit()
+        external fun exit()
+
+        fun isOptionHeld(): Boolean = keyState and M8Key.OPTION.code != 0
+        fun isEditHeld(): Boolean = keyState and M8Key.EDIT.code != 0
+
+        fun tapWithCurrentState(key: M8Key) {
+            sendClickEvent((keyState or key.code).toChar())
+            sendClickEvent(keyState.toChar())
+        }
 
         fun handleTouch(key: M8Key, action: Int): Boolean {
             when (action) {
