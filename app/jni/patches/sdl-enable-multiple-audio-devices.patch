@@ -7,13 +7,14 @@ index bc0e7a285..f1b2cf12b 100644
      LOGI("Opening device id %d", aaudio_device_id);
      ctx.AAudioStreamBuilder_setDeviceId(builder, aaudio_device_id);
 +#else
-+    // Allow apps to override the device ID via hint even when multi-device
++    // Allow apps to override the OUTPUT device ID via hint even when multi-device
 +    // enumeration is disabled, to route audio to a specific Android device.
-+    {
++    // Only applies to output streams; input (M8 capture) always uses its own device.
++    if (!recording) {
 +        const char *hint = SDL_GetHint("SDL_ANDROID_AUDIO_DEVICE_ID");
 +        if (hint && *hint) {
 +            const int aaudio_device_id = SDL_atoi(hint);
-+            LOGI("Opening device id %d (from hint)", aaudio_device_id);
++            LOGI("Opening output device id %d (from hint)", aaudio_device_id);
 +            ctx.AAudioStreamBuilder_setDeviceId(builder, aaudio_device_id);
 +        }
 +    }
