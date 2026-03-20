@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -78,16 +79,21 @@ class M8SDLActivity : SDLActivity() {
     }
 
     private var usbConnection: UsbDeviceConnection? = null
+    private var screenMidiListener: M8ScreenTouchListener? = null
     private var useDefaultAudio = false
+    private var useDefaultAudioInput = false
     private var audioBuffer = 4096
     private var currentAudioDeviceId = 0
+    private var currentAudioInputDeviceId = 0
 
     private val audioDeviceCallback = object : AudioDeviceCallback() {
         override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
-            updateAudioOutputDevice()
+            if (useDefaultAudio) updateAudioOutputDevice()
+            if (useDefaultAudioInput) updateAudioInputDevice()
         }
         override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
-            updateAudioOutputDevice()
+            if (useDefaultAudio) updateAudioOutputDevice()
+            if (useDefaultAudioInput) updateAudioInputDevice()
         }
     }
 
@@ -98,6 +104,14 @@ class M8SDLActivity : SDLActivity() {
         currentAudioDeviceId = newDeviceId
         hintAudioOutputDevice(newDeviceId)
         Thread { restartAudioOutput(audioBuffer) }.start()
+    }
+
+    private fun updateAudioInputDevice() {
+        val newDeviceId = GeneralSettings.getBestInputDeviceId(this)
+        if (newDeviceId == currentAudioInputDeviceId) return
+        Log.i(TAG, "Audio input device changed: $currentAudioInputDeviceId -> $newDeviceId")
+        currentAudioInputDeviceId = newDeviceId
+        hintAudioInputDevice(newDeviceId)
     }
 
     override fun onStart() {
@@ -126,7 +140,7 @@ class M8SDLActivity : SDLActivity() {
         super.onDestroy()
         unregisterReceiver(usbReceiver)
         usbConnection?.close()
-        if (useDefaultAudio) {
+        if (useDefaultAudio || useDefaultAudioInput) {
             getSystemService(AudioManager::class.java).unregisterAudioDeviceCallback(audioDeviceCallback)
         }
     }
@@ -141,11 +155,16 @@ class M8SDLActivity : SDLActivity() {
         super.onCreate(savedInstanceState)
         val generalPreferences = GeneralSettings.getGeneralPreferences(this)
         useDefaultAudio = generalPreferences.useDefaultAudio
+        useDefaultAudioInput = generalPreferences.useDefaultAudioInput
         audioBuffer = generalPreferences.audioBuffer
         hintAudioDriver(generalPreferences.audioDriver)
         if (useDefaultAudio) {
             currentAudioDeviceId = GeneralSettings.getBestOutputDeviceId(this)
             hintAudioOutputDevice(currentAudioDeviceId)
+        }
+        currentAudioInputDeviceId = generalPreferences.audioInputDevice
+        hintAudioInputDevice(generalPreferences.audioInputDevice)
+        if (useDefaultAudio || useDefaultAudioInput) {
             getSystemService(AudioManager::class.java)
                 .registerAudioDeviceCallback(audioDeviceCallback, Handler(Looper.getMainLooper()))
         }
@@ -192,6 +211,48 @@ class M8SDLActivity : SDLActivity() {
         }
     }
 
+    private fun routeToMidiListener(ev: MotionEvent, targetView: View, listener: M8ScreenTouchListener) {
+        val loc = IntArray(2)
+        targetView.getLocationInWindow(loc)
+        val left = loc[0].toFloat()
+        val top = loc[1].toFloat()
+        val right = left + targetView.width
+        val bottom = top + targetView.height
+        val action = ev.actionMasked
+        val pointerIdx = when (action) {
+            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN,
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
+                val ai = ev.actionIndex
+                if (ev.getX(ai) >= left && ev.getX(ai) < right &&
+                    ev.getY(ai) >= top && ev.getY(ai) < bottom) ai else -1
+            }
+            MotionEvent.ACTION_MOVE -> (0 until ev.pointerCount).firstOrNull { i ->
+                ev.getX(i) >= left && ev.getX(i) < right &&
+                ev.getY(i) >= top && ev.getY(i) < bottom
+            } ?: -1
+            else -> -1
+        }
+        if (pointerIdx >= 0) {
+            val lx = ev.getX(pointerIdx) - left
+            val ly = ev.getY(pointerIdx) - top
+            val mappedAction = when (action) {
+                MotionEvent.ACTION_POINTER_DOWN -> MotionEvent.ACTION_DOWN
+                MotionEvent.ACTION_POINTER_UP -> MotionEvent.ACTION_UP
+                else -> action
+            }
+            val synth = MotionEvent.obtain(ev.downTime, ev.eventTime, mappedAction, lx, ly, ev.metaState)
+            listener.onTouch(targetView, synth)
+            synth.recycle()
+        }
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        mSurface?.let { surface ->
+            screenMidiListener?.let { routeToMidiListener(ev, surface, it) }
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
     override fun onUnhandledMessage(command: Int, param: Any?): Boolean {
         if (command == 0x8001 && param is Int) {
             val r = param shr 16
@@ -236,6 +297,14 @@ class M8SDLActivity : SDLActivity() {
         }
         val screen = mainLayout.findViewById<ViewGroup>(R.id.screen)
         screen.addView(view)
+        if (generalPreferences.touchCcEnabled) {
+            screenMidiListener = M8ScreenTouchListener(
+                generalPreferences.touchCcChannel - 1,
+                generalPreferences.touchCcX,
+                generalPreferences.touchCcY,
+                ::sendMidiCC
+            )
+        }
         super.setContentView(mainLayout)
     }
 
@@ -272,6 +341,10 @@ class M8SDLActivity : SDLActivity() {
     private external fun hintAudioOutputDevice(deviceId: Int)
 
     private external fun restartAudioOutput(bufferSize: Int)
+
+    private external fun hintAudioInputDevice(deviceId: Int)
+
+    private external fun sendMidiCC(channel: Int, cc: Int, value: Int)
 
     private external fun lockOrientation(orientation: String?)
 

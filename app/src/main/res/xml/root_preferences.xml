@@ -22,6 +22,18 @@
             app:title="@string/choose_audio_device"
             app:useSimpleSummaryProvider="true" />
 
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:key="@string/use_default_audio_input_pref"
+            app:title="@string/use_default_audio_input"
+            app:summary="@string/use_default_audio_input_summary" />
+
+        <ListPreference
+            app:defaultValue="0"
+            app:key="@string/audio_input_device_pref"
+            app:title="@string/choose_audio_input_device"
+            app:useSimpleSummaryProvider="true" />
+
         <ListPreference
             app:defaultValue="AAudio"
             app:entries="@array/audio_drivers"
@@ -67,6 +79,29 @@
             app:fragment="io.maido.m8client.settings.GamepadSettings"
             app:summary="@string/gamepad_mappings_summary"
             app:title="@string/gamepad_mappings" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/midi_header">
+        <SwitchPreferenceCompat
+            app:defaultValue="false"
+            app:key="@string/touch_cc_enabled_pref"
+            app:title="@string/touch_cc_enabled"
+            app:summary="@string/touch_cc_enabled_summary" />
+        <EditTextPreference
+            app:defaultValue="1"
+            app:key="@string/touch_cc_channel_pref"
+            app:title="@string/touch_cc_channel"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:defaultValue="1"
+            app:key="@string/touch_cc_x_pref"
+            app:title="@string/touch_cc_x"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:defaultValue="2"
+            app:key="@string/touch_cc_y_pref"
+            app:title="@string/touch_cc_y"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/advanced">

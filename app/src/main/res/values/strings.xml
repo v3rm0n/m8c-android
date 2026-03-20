@@ -37,6 +37,11 @@
     <string name="audio_driver_pref">audio_driver</string>
     <string name="audio_buffer_pref">audio_buffer</string>
     <string name="audio_device_pref">audio_device</string>
+    <string name="use_default_audio_input_pref">use_default_audio_input</string>
+    <string name="use_default_audio_input">Use default audio input</string>
+    <string name="use_default_audio_input_summary">Let the system decide; follows headset mic, Bluetooth, etc.</string>
+    <string name="audio_input_device_pref">audio_input_device</string>
+    <string name="choose_audio_input_device">Audio input device</string>
     <string name="buttons_pref">buttons</string>
     <string name="ui">User Interface</string>
     <string name="lock_orientation_pref">lock_orientation</string>
@@ -54,6 +59,16 @@
     <string name="new_button_layout_pref">button_layout_pref</string>
     <string name="new_button_layout_summary">Closer to the real device, uses portrait orientation</string>
     <string name="show_onscreen_buttons_summary">Buttons will still be there, but invisible</string>
+    <string name="midi_header">MIDI</string>
+    <string name="touch_cc_enabled_pref">touch_cc_enabled</string>
+    <string name="touch_cc_enabled">Touch CC</string>
+    <string name="touch_cc_enabled_summary">Send MIDI CC to M8 when touching the screen. X (up) and Y (right) map to separate CCs.</string>
+    <string name="touch_cc_channel_pref">touch_cc_channel</string>
+    <string name="touch_cc_channel">MIDI channel</string>
+    <string name="touch_cc_x_pref">touch_cc_x</string>
+    <string name="touch_cc_x">X (up/down) CC number</string>
+    <string name="touch_cc_y_pref">touch_cc_y</string>
+    <string name="touch_cc_y">Y (left/right) CC number</string>
     <string-array name="sdl_gamecontroller_buttons">
         <item>A</item>
         <item>B</item>
