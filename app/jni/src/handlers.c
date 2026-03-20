@@ -72,6 +72,17 @@ Java_io_maido_m8client_M8TouchListener_00024Companion_exit(JNIEnv *env, jobject 
 }
 
 JNIEXPORT void JNICALL
+Java_io_maido_m8client_M8SDLActivity_hintAudioInputDevice(JNIEnv *env, jobject thiz,
+                                                           jint device_id) {
+    if (device_id > 0) {
+        char buf[32];
+        SDL_snprintf(buf, sizeof(buf), "%d", device_id);
+        SDL_Log("Setting audio input device id to %s", buf);
+        SDL_SetHint("SDL_ANDROID_AUDIO_CAPTURE_DEVICE_ID", buf);
+    }
+}
+
+JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8SDLActivity_lockOrientation(JNIEnv *env, jobject thiz, jstring lock) {
     if (lock == NULL) {
         SDL_Log("Don't lock orientation");

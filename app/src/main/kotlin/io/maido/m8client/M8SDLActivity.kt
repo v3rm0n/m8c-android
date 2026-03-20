@@ -79,15 +79,19 @@ class M8SDLActivity : SDLActivity() {
 
     private var usbConnection: UsbDeviceConnection? = null
     private var useDefaultAudio = false
+    private var useDefaultAudioInput = false
     private var audioBuffer = 4096
     private var currentAudioDeviceId = 0
+    private var currentAudioInputDeviceId = 0
 
     private val audioDeviceCallback = object : AudioDeviceCallback() {
         override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
-            updateAudioOutputDevice()
+            if (useDefaultAudio) updateAudioOutputDevice()
+            if (useDefaultAudioInput) updateAudioInputDevice()
         }
         override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
-            updateAudioOutputDevice()
+            if (useDefaultAudio) updateAudioOutputDevice()
+            if (useDefaultAudioInput) updateAudioInputDevice()
         }
     }
 
@@ -98,6 +102,14 @@ class M8SDLActivity : SDLActivity() {
         currentAudioDeviceId = newDeviceId
         hintAudioOutputDevice(newDeviceId)
         Thread { restartAudioOutput(audioBuffer) }.start()
+    }
+
+    private fun updateAudioInputDevice() {
+        val newDeviceId = GeneralSettings.getBestInputDeviceId(this)
+        if (newDeviceId == currentAudioInputDeviceId) return
+        Log.i(TAG, "Audio input device changed: $currentAudioInputDeviceId -> $newDeviceId")
+        currentAudioInputDeviceId = newDeviceId
+        hintAudioInputDevice(newDeviceId)
     }
 
     override fun onStart() {
@@ -126,7 +138,7 @@ class M8SDLActivity : SDLActivity() {
         super.onDestroy()
         unregisterReceiver(usbReceiver)
         usbConnection?.close()
-        if (useDefaultAudio) {
+        if (useDefaultAudio || useDefaultAudioInput) {
             getSystemService(AudioManager::class.java).unregisterAudioDeviceCallback(audioDeviceCallback)
         }
     }
@@ -141,11 +153,16 @@ class M8SDLActivity : SDLActivity() {
         super.onCreate(savedInstanceState)
         val generalPreferences = GeneralSettings.getGeneralPreferences(this)
         useDefaultAudio = generalPreferences.useDefaultAudio
+        useDefaultAudioInput = generalPreferences.useDefaultAudioInput
         audioBuffer = generalPreferences.audioBuffer
         hintAudioDriver(generalPreferences.audioDriver)
         if (useDefaultAudio) {
             currentAudioDeviceId = GeneralSettings.getBestOutputDeviceId(this)
             hintAudioOutputDevice(currentAudioDeviceId)
+        }
+        currentAudioInputDeviceId = generalPreferences.audioInputDevice
+        hintAudioInputDevice(generalPreferences.audioInputDevice)
+        if (useDefaultAudio || useDefaultAudioInput) {
             getSystemService(AudioManager::class.java)
                 .registerAudioDeviceCallback(audioDeviceCallback, Handler(Looper.getMainLooper()))
         }
@@ -272,6 +289,8 @@ class M8SDLActivity : SDLActivity() {
     private external fun hintAudioOutputDevice(deviceId: Int)
 
     private external fun restartAudioOutput(bufferSize: Int)
+
+    private external fun hintAudioInputDevice(deviceId: Int)
 
     private external fun lockOrientation(orientation: String?)
 

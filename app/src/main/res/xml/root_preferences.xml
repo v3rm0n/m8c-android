@@ -22,6 +22,18 @@
             app:title="@string/choose_audio_device"
             app:useSimpleSummaryProvider="true" />
 
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:key="@string/use_default_audio_input_pref"
+            app:title="@string/use_default_audio_input"
+            app:summary="@string/use_default_audio_input_summary" />
+
+        <ListPreference
+            app:defaultValue="0"
+            app:key="@string/audio_input_device_pref"
+            app:title="@string/choose_audio_input_device"
+            app:useSimpleSummaryProvider="true" />
+
         <ListPreference
             app:defaultValue="AAudio"
             app:entries="@array/audio_drivers"
