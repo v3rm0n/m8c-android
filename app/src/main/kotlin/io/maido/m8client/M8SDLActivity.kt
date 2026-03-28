@@ -158,6 +158,7 @@ class M8SDLActivity : SDLActivity() {
         useDefaultAudioInput = generalPreferences.useDefaultAudioInput
         audioBuffer = generalPreferences.audioBuffer
         hintAudioDriver(generalPreferences.audioDriver)
+        setAudioGain(generalPreferences.audioGain)
         if (useDefaultAudio) {
             currentAudioDeviceId = GeneralSettings.getBestOutputDeviceId(this)
             hintAudioOutputDevice(currentAudioDeviceId)
@@ -343,6 +344,8 @@ class M8SDLActivity : SDLActivity() {
     private external fun restartAudioOutput(bufferSize: Int)
 
     private external fun hintAudioInputDevice(deviceId: Int)
+
+    private external fun setAudioGain(gain: Float)
 
     private external fun sendMidiCC(channel: Int, cc: Int, value: Int)
 

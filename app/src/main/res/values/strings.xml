@@ -29,6 +29,20 @@
         <item>4096</item>
         <item>8192</item>
     </string-array>
+    <string-array name="audio_gain_entries">
+        <item>1x (default)</item>
+        <item>1.5x</item>
+        <item>2x</item>
+        <item>3x</item>
+    </string-array>
+    <string-array name="audio_gain_values">
+        <item>1.0</item>
+        <item>1.5</item>
+        <item>2.0</item>
+        <item>3.0</item>
+    </string-array>
+    <string name="audio_gain_pref">audio_gain</string>
+    <string name="choose_audio_gain">Volume boost</string>
     <string name="use_default_audio_pref">use_default_audio</string>
     <string name="use_default_audio">Use default audio device</string>
     <string name="use_default_audio_summary">Let the system decide; follows headphones, Bluetooth, etc.</string>
