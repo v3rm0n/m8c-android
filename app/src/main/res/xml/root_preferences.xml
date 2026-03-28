@@ -50,6 +50,14 @@
             app:title="@string/choose_audio_buffer"
             app:useSimpleSummaryProvider="true" />
 
+        <ListPreference
+            app:defaultValue="1.0"
+            app:entries="@array/audio_gain_entries"
+            app:entryValues="@array/audio_gain_values"
+            app:key="@string/audio_gain_pref"
+            app:title="@string/choose_audio_gain"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/ui">
