@@ -78,6 +78,8 @@ class GeneralSettings : PreferenceFragmentCompat() {
             val idleMs = preferences.getString(context.getString(R.string.idle_ms_pref), "0")!!
             val audioBuffer =
                 preferences.getString(context.getString(R.string.audio_buffer_pref), "4096")!!
+            val audioGain =
+                preferences.getString(context.getString(R.string.audio_gain_pref), "1.0")!!.toFloat()
             val useNewLayout =
                 preferences.getBoolean(context.getString(R.string.new_button_layout_pref), false)
             val touchCcEnabled = preferences.getBoolean(context.getString(R.string.touch_cc_enabled_pref), false)
@@ -98,7 +100,8 @@ class GeneralSettings : PreferenceFragmentCompat() {
                 touchCcEnabled,
                 touchCcChannel,
                 touchCcX,
-                touchCcY
+                touchCcY,
+                audioGain
             )
         }
     }
@@ -236,5 +239,6 @@ data class GeneralPreferences(
     val touchCcEnabled: Boolean = false,
     val touchCcChannel: Int = 1,
     val touchCcX: Int = 1,
-    val touchCcY: Int = 2
+    val touchCcY: Int = 2,
+    val audioGain: Float = 1.0f
 )

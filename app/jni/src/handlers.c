@@ -91,6 +91,12 @@ Java_io_maido_m8client_M8SDLActivity_hintAudioInputDevice(JNIEnv *env, jobject t
 }
 
 JNIEXPORT void JNICALL
+Java_io_maido_m8client_M8SDLActivity_setAudioGain(JNIEnv *env, jobject thiz, jfloat gain) {
+    SDL_Log("Setting audio gain to %f", (double)gain);
+    audio_set_gain((float)gain);
+}
+
+JNIEXPORT void JNICALL
 Java_io_maido_m8client_M8SDLActivity_lockOrientation(JNIEnv *env, jobject thiz, jstring lock) {
     if (lock == NULL) {
         SDL_Log("Don't lock orientation");
