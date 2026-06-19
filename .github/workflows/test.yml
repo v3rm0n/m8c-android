@@ -10,7 +10,7 @@ jobs:
       checks: write
       pull-requests: write
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Set up JDK
       uses: actions/setup-java@v4
@@ -39,7 +39,7 @@ jobs:
   auto-merge:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: v3rm0n/action-dependabot-auto-merge@digest
         with:
           github-token: ${{ secrets.mytoken }}
