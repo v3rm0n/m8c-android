@@ -55,28 +55,33 @@ android {
     }
 }
 
-tasks.register('applySDLPatches') {
-    def sdlDir = file('jni/SDL')
+tasks.register('applyNativePatches') {
+    def patchTargets = ['sdl-': file('jni/SDL'), 'm8c-': file('jni/m8c')]
     def patches = fileTree('jni/patches') { include '*.patch' }.files.toList()
     doLast {
         patches.each { patch ->
-            def check = ['git', 'apply', '--check', patch.absolutePath].execute(null, sdlDir)
-            check.waitFor()
-            if (check.exitValue() == 0) {
-                def apply = ['git', 'apply', patch.absolutePath].execute(null, sdlDir)
-                apply.waitFor()
-                if (apply.exitValue() != 0) {
-                    throw new GradleException("Failed to apply patch: ${patch.name}")
-                }
-                logger.lifecycle("Applied SDL patch: ${patch.name}")
+            def targetDir = patchTargets.find { patch.name.startsWith(it.key) }?.value
+            if (targetDir == null) {
+                throw new GradleException("Patch ${patch.name} has no known target prefix: ${patchTargets.keySet()}")
             }
+            def applied = ['git', 'apply', '--reverse', '--check', patch.absolutePath].execute(null, targetDir)
+            applied.waitFor()
+            if (applied.exitValue() == 0) {
+                return // already applied
+            }
+            def apply = ['git', 'apply', patch.absolutePath].execute(null, targetDir)
+            apply.waitFor()
+            if (apply.exitValue() != 0) {
+                throw new GradleException("Failed to apply patch: ${patch.name}")
+            }
+            logger.lifecycle("Applied patch: ${patch.name}")
         }
     }
 }
 
 tasks.configureEach { task ->
     if (task.name.startsWith('externalNativeBuild') || task.name.startsWith('buildNdkBuild')) {
-        task.dependsOn 'applySDLPatches'
+        task.dependsOn 'applyNativePatches'
     }
 }
 

@@ -1,0 +1,16 @@
+diff --git a/src/input.c b/src/input.c
+index 0c8100b..5dab299 100644
+--- a/src/input.c
++++ b/src/input.c
+@@ -280,6 +280,11 @@ void input_handle_gamepad_button(struct app_context *ctx, const SDL_GamepadButto
+     return;
+   }
+ 
++  if (pressed && button == conf->gamepad_reset && gamepad_state.current_buttons == key_select) {
++    m8_reset_display();
++    return;
++  }
++
+   keycode = gamepad_state.current_buttons;
+ 
+   input_process_and_send(ctx);
