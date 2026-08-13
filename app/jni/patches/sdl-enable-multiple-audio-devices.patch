@@ -2,7 +2,7 @@ diff --git a/src/audio/aaudio/SDL_aaudio.c b/src/audio/aaudio/SDL_aaudio.c
 index bc0e7a285..f1b2cf12b 100644
 --- a/src/audio/aaudio/SDL_aaudio.c
 +++ b/src/audio/aaudio/SDL_aaudio.c
-@@ -307,6 +307,17 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
+@@ -307,6 +307,18 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
      const int aaudio_device_id = (int) ((size_t) device->handle);
      LOGI("Opening device id %d", aaudio_device_id);
      ctx.AAudioStreamBuilder_setDeviceId(builder, aaudio_device_id);
