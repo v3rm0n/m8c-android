@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set tag
         id: vars
@@ -36,6 +36,6 @@ jobs:
         run: ./gradlew --build-cache -PversionName=${{ steps.vars.outputs.tag }} build
 
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: app/build/outputs/apk/debug/app-debug.apk

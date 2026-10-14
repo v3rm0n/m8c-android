@@ -30,11 +30,13 @@ The buttons have two special functions added to them:
 
 ### Prerequisites
 
-- Android SDK/NDK
+- JDK 17
+- Android SDK Platform 37 and Build Tools 37.0.0
+- Android NDK 30.0.16248370
 
 ### Usage
 
-- Run `git submodule update --init` to download all dependencies (libusb, m8c, SDL2)
+- Run `git submodule update --init` to download all dependencies (libusb, m8c, SDL3)
 - Run `./gradlew installDebug` to build and install it to your device
 
 ### Example

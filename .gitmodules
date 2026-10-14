@@ -4,7 +4,8 @@
 [submodule "app/jni/SDL"]
 	path = app/jni/SDL
 	url = https://github.com/libsdl-org/SDL.git
-	branch = SDL2
+	branch = release-3.4.x
 [submodule "app/jni/m8c"]
 	path = app/jni/m8c
 	url = https://github.com/dwat3r/m8c.git
+	branch = feature/mic-input
