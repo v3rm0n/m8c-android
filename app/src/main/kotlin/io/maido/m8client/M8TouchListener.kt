@@ -6,6 +6,7 @@ import android.view.HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING
 import android.view.HapticFeedbackConstants.VIRTUAL_KEY
 import android.view.HapticFeedbackConstants.VIRTUAL_KEY_RELEASE
 import android.view.MotionEvent
+import android.view.MotionEvent.ACTION_CANCEL
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_POINTER_DOWN
 import android.view.MotionEvent.ACTION_POINTER_UP
@@ -21,6 +22,9 @@ internal class M8TouchListener(
         private val TAG = M8TouchListener::class.simpleName
         private const val reset = 132.toChar()
         private const val exit = 96.toChar()
+        private val directions = setOf(M8Key.UP, M8Key.DOWN, M8Key.LEFT, M8Key.RIGHT)
+        private val directionMask = directions.fold(0) { mask, key -> mask or key.code }
+        private val pressedButtons = linkedSetOf<M8TouchListener>()
         private var keyState = 0
 
         private external fun sendClickEvent(event: Char)
@@ -37,52 +41,66 @@ internal class M8TouchListener(
             sendClickEvent(keyState.toChar())
         }
 
-        fun handleTouch(key: M8Key, action: Int): Boolean {
-            when (action) {
-                ACTION_DOWN, ACTION_POINTER_DOWN -> {
-                    keyState = keyState or key.code
-                    when (keyState.toChar()) {
-                        reset -> {
-                            Log.d(TAG, "Sending reset")
-                            resetScreen()
-                        }
+        private fun currentButtons(): Int {
+            val mask = pressedButtons.fold(0) { state, button -> state or button.key.code }
+            if (mask and M8Key.SHIFT.code == 0) return mask
 
-                        exit -> {
-                            Log.d(TAG, "Sending exit")
-                            keyState = 0
-                            sendClickEvent(0.toChar())
-                            exit()
-                        }
+            // Keep Shift held while rolling from one direction to the next.
+            val direction = pressedButtons.lastOrNull { it.key in directions }?.key?.code ?: 0
+            return (mask and directionMask.inv()) or direction
+        }
+    }
 
-                        else -> {
-                            Log.d(TAG, "Sending key down $key as $keyState")
-                            sendClickEvent(keyState.toChar())
-                        }
-                    }
-                }
+    private val pointers = mutableSetOf<Int>()
 
-                ACTION_UP, ACTION_POINTER_UP -> {
-                    keyState = keyState and key.code.inv()
-                    Log.d(TAG, "Sending key up $key as $keyState")
-                    sendClickEvent(keyState.toChar())
-                }
+    private fun updateButton(pressed: Boolean) {
+        if (pressed) pressedButtons.add(this) else pressedButtons.remove(this)
+        val newState = currentButtons()
+        if (newState == keyState) return
+        keyState = newState
+        when {
+            pressed && keyState.toChar() == reset -> {
+                Log.d(TAG, "Sending reset")
+                resetScreen()
             }
-            return true
+
+            pressed && keyState.toChar() == exit -> {
+                Log.d(TAG, "Sending exit")
+                pressedButtons.clear()
+                keyState = 0
+                sendClickEvent(0.toChar())
+                exit()
+            }
+
+            else -> sendClickEvent(keyState.toChar())
         }
     }
 
     override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
-        handleTouch(key, motionEvent.actionMasked)
         when (motionEvent.actionMasked) {
             ACTION_DOWN, ACTION_POINTER_DOWN -> {
-                view.performHapticFeedback(VIRTUAL_KEY, FLAG_IGNORE_VIEW_SETTING)
+                if (motionEvent.actionMasked == ACTION_DOWN) pointers.clear()
+                val pointerId = motionEvent.getPointerId(motionEvent.actionIndex)
+                if (pointers.add(pointerId) && pointers.size == 1) {
+                    updateButton(true)
+                    view.performHapticFeedback(VIRTUAL_KEY, FLAG_IGNORE_VIEW_SETTING)
+                }
             }
 
             ACTION_UP, ACTION_POINTER_UP -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-                    view.performHapticFeedback(VIRTUAL_KEY_RELEASE, FLAG_IGNORE_VIEW_SETTING)
+                val pointerId = motionEvent.getPointerId(motionEvent.actionIndex)
+                if (pointers.remove(pointerId) && pointers.isEmpty()) {
+                    updateButton(false)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                        view.performHapticFeedback(VIRTUAL_KEY_RELEASE, FLAG_IGNORE_VIEW_SETTING)
+                    }
+                    view.performClick()
                 }
-                view.performClick()
+            }
+
+            ACTION_CANCEL -> {
+                pointers.clear()
+                updateButton(false)
             }
         }
         return true
