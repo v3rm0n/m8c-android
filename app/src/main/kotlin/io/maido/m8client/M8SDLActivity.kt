@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -27,6 +28,7 @@ import android.widget.FrameLayout
 import io.maido.m8client.M8Key.*
 import io.maido.m8client.M8Util.isM8
 import io.maido.m8client.settings.GeneralSettings
+import io.maido.m8client.settings.KeyboardBinding
 import org.libsdl.app.SDLActivity
 
 
@@ -79,6 +81,8 @@ class M8SDLActivity : SDLActivity() {
     }
 
     private var usbConnection: UsbDeviceConnection? = null
+    private val keyboardMappings by lazy { KeyboardBinding.getMappings(this) }
+    private val heldKeyboardKeys = mutableMapOf<Pair<Int, Int>, Int>()
     private var screenMidiListener: M8ScreenTouchListener? = null
     private var useDefaultAudio = false
     private var useDefaultAudioInput = false
@@ -133,6 +137,39 @@ class M8SDLActivity : SDLActivity() {
     override fun onResume() {
         Log.d(TAG, "onResume()")
         super.onResume()
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (keyboardMappings.isEmpty() || !KeyboardBinding.isKeyboardEvent(event)) {
+            return super.dispatchKeyEvent(event)
+        }
+        val target = keyboardMappings[event.keyCode]
+            ?: event.keyCode.takeIf { it in keyboardMappings.values }
+            ?: return super.dispatchKeyEvent(event)
+        val physicalKey = event.deviceId to event.keyCode
+        when (event.action) {
+            KeyEvent.ACTION_DOWN -> {
+                if (event.repeatCount == 0) {
+                    val alreadyHeld = target in heldKeyboardKeys.values
+                    heldKeyboardKeys[physicalKey] = target
+                    if (!alreadyHeld) onNativeKeyDown(target)
+                }
+            }
+            KeyEvent.ACTION_UP -> {
+                val released = heldKeyboardKeys.remove(physicalKey)
+                if (released != null && released !in heldKeyboardKeys.values) onNativeKeyUp(released)
+            }
+            else -> return super.dispatchKeyEvent(event)
+        }
+        return true
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        if (!hasFocus) {
+            heldKeyboardKeys.values.toSet().forEach { onNativeKeyUp(it) }
+            heldKeyboardKeys.clear()
+        }
+        super.onWindowFocusChanged(hasFocus)
     }
 
     override fun onDestroy() {
