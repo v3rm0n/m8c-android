@@ -321,15 +321,15 @@ class M8SDLActivity : SDLActivity() {
     }
 
     override fun setContentView(view: View) {
-        val mainLayout = FrameLayout(this)
-        val m8Layout = layoutInflater.inflate(R.layout.m8, mainLayout, true)
         val generalPreferences = GeneralSettings.getGeneralPreferences(this)
+        val mainLayout = M8ButtonLayout(this, generalPreferences.useNewLayout, generalPreferences.buttonScale)
+        val m8Layout = layoutInflater.inflate(R.layout.m8, mainLayout, true)
         if (generalPreferences.showButtons) {
             val layout =
                 if (generalPreferences.useNewLayout) R.layout.buttons_alt else R.layout.buttons
             val buttons = layoutInflater.inflate(layout, mainLayout, false)
             setButtonListeners(buttons)
-            mainLayout.addView(buttons)
+            mainLayout.setButtons(buttons)
         } else {
             setButtonListeners(m8Layout)
         }
