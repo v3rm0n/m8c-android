@@ -68,6 +68,15 @@
             app:summary="@string/show_onscreen_buttons_summary"
             app:title="@string/show_onscreen_buttons" />
 
+        <ListPreference
+            app:defaultValue="100"
+            app:key="@string/button_size_pref"
+            app:title="@string/button_size"
+            app:dependency="@string/buttons_pref"
+            app:entries="@array/button_size_entries"
+            app:entryValues="@array/button_size_values"
+            app:useSimpleSummaryProvider="true" />
+
         <SwitchPreferenceCompat
             app:defaultValue="false"
             app:key="@string/new_button_layout_pref"

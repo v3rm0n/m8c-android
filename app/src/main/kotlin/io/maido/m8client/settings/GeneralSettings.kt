@@ -101,7 +101,9 @@ class GeneralSettings : PreferenceFragmentCompat() {
                 touchCcChannel,
                 touchCcX,
                 touchCcY,
-                audioGain
+                audioGain,
+                preferences.getString(context.getString(R.string.button_size_pref), "100")
+                    ?.toIntOrNull() ?: 100
             )
         }
     }
@@ -240,5 +242,6 @@ data class GeneralPreferences(
     val touchCcChannel: Int = 1,
     val touchCcX: Int = 1,
     val touchCcY: Int = 2,
-    val audioGain: Float = 1.0f
+    val audioGain: Float = 1.0f,
+    val buttonScale: Int = 100,
 )
