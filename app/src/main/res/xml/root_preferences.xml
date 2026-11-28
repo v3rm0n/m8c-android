@@ -84,6 +84,10 @@
 
     <PreferenceCategory app:title="@string/input">
         <Preference
+            app:fragment="io.maido.m8client.settings.KeyboardSettings"
+            app:summary="@string/keyboard_mappings_summary"
+            app:title="@string/keyboard_mappings" />
+        <Preference
             app:fragment="io.maido.m8client.settings.GamepadSettings"
             app:summary="@string/gamepad_mappings_summary"
             app:title="@string/gamepad_mappings" />

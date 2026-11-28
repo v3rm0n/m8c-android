@@ -61,6 +61,10 @@
     <string name="lock_orientation_pref">lock_orientation</string>
     <string name="lock_landscape">Lock to landscape orientation</string>
     <string name="gamepad_mappings">Gamepad mappings</string>
+    <string name="keyboard_mappings">Physical keyboard mappings</string>
+    <string name="keyboard_mappings_summary">Assign keys to the eight M8 controls</string>
+    <string name="keyboard_press_key">Press and release a key on your physical keyboard.</string>
+    <string name="keyboard_default_binding">Use default</string>
     <string name="gamepad_mappings_summary">Use custom gamepad button mappings</string>
     <string name="input">Input</string>
     <string name="advanced">Advanced</string>
